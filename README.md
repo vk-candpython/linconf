@@ -1670,7 +1670,7 @@ log-target = null
 
 # EASYEFFECTS
 
-[EasyEffects](https://github.com/cppandpython/easyeffects)
+[EasyEffects](https://github.com/vk-candpython/easyeffects)
 
 
 <br><br>
