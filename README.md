@@ -1,27 +1,103 @@
 # ⚡ linconf
 
 
-**Linux Real-Time Low-Latency Configuration Collection**
-
-- Kernel tuning (Xanmod LTS)
-- CPU/GPU optimization (Intel + NVIDIA)
-- Memory management (ZRAM + tmpfs)
-- Audio stack (PipeWire low-latency)
-- Security hardening (AppArmor, USBGuard)
 
 
-<br><br>
+**Linux Real-time Low-Latency Configuration Collection**
 
+## 📦 What's included
+
+### 🧠 Kernel & Boot
+- **Xanmod LTS** — real-time kernel
+- **GRUB** — optimized cmdline (mitigations, NVidia, Intel, scheduler)
+- **Sysctl** — sched latency, BBR congestion, memory management, security hardening
+
+### ⚡ CPU & Interrupts
+- **Performance governor** — max frequency on AC
+- **RTIRQ** — real-time interrupt priorities (USB, HID, NVMe, audio)
+- **CPU affinity** — isolate cores 2-3 for latency-sensitive tasks
+
+### 🎮 GPU (NVIDIA RTX 4050)
+- **NVreg** — MSI, PCIe Gen4, PreserveVideoMemory, PowerMizer
+- **Coolbits 31** — overclocking + fan control
+- **DXVK** — maxFrameLatency=1, async, shader cache
+- **VKBasalt** — Clarity, SMAA, Vibrance, LUT
+
+### 🧠 Memory & Storage
+- **ZRAM** — zstd compression, 50% RAM size
+- **tmpfs** — /tmp (10G), /var/log (256M), /var/tmp (1G)
+- **fstrim** — daily SSD trim (idle priority)
+- **noatime/nodiratime** — reduce disk writes
+
+### 🔊 Audio (PipeWire)
+- **Quantum 512/48000** — low latency
+- **S32LE format** — high precision
+- **Real-time priority** — rt.prio=50, nice=-2
+- **PulseAudio fallback** — speex-float-10
+
+### 🔋 Power Management
+- **TLP** — AC/battery profiles, CPU boost, NVMe power mgmt
+- **thermald** — thermal throttling at 85°C/95°C
+- **laptop_mode=5** — disk write aggregation
+- **Conservation mode** — battery charging limit
+
+### 🛡️ Security
+- **USBGuard** — block unknown devices, policy-based
+- **ClamAV** — on-access scanning for /home
+- **Immutable passwd/shadow** — chattr +i
+- **Blacklisted modules** — uvcvideo, firewire, floppy, parport, joydev
+- **Sysctl hardening** — kptr_restrict, dmesg_restrict, ptrace_scope
+
+### 🌐 Network
+- **BBR** — TCP congestion control
+- **fq_codel** — queue discipline
+- **Randomized MAC** — privacy
+- **WiFi powersave 3** — balance performance/battery
+
+### 🖥️ Desktop (GNOME/Wayland)
+- **Triple buffering + VRR** — smooth rendering
+- **Animations off** — reduce latency
+- **Hot corners off** — disable CPU wakeups
+- **Flat acceleration** — raw mouse input
+
+### 📦 Development & Gaming
+- **VS Code** — custom settings, code-runner
+- **Build tools** — gcc, cmake, meson, python
+- **Wine/Proton** — 32-bit support, dxvk
+- **GameMode** — renice -10, pin cores, performance governor
+
+### 📝 Logging & Monitoring
+- **journald** — volatile storage, no compression
+- **printk=3** — minimal kernel logs
+- **preload** — adaptive prefetch
+
+---
+
+## 🖥️ Tested Hardware
+
+| Component | Model |
+|-----------|-------|
+| **Laptop** | LOQ-15IAX9 |
+| **CPU** | Intel Core i5-12450HX (8 cores) |
+| **GPU** | NVIDIA RTX 4050 Laptop |
+| **RAM** | 16GB DDR5 |
+| **Storage** | NVMe SSD |
+| **Audio** | Realtek ALC3287 |
+| **WiFi** | Intel AX201 |
+
+---
 
 ## ⚠️ Disclaimer
 
 > **Use at your own risk.**  
-> These configurations modify system behavior.  
+> These configurations modify system behavior (kernel, GRUB, modules).  
 > Always backup your data before applying.  
-> Tested only on **LOQ-15IAX9** with Ubuntu/Debian.
+> Tested only on Ubuntu/Debian-based distros.
 
 
-<br><br><br>
+
+
+<br><br><br><br>
 
 
 
