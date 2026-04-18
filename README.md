@@ -1,7 +1,7 @@
 # ⚡ linconf
 
 
-**Linux Low-Latency Configuration Collection**
+**Linux Real-time Low-Latency Configuration Collection**
 
 - Kernel tuning (Xanmod LTS)
 - CPU/GPU optimization (Intel + NVIDIA)
