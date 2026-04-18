@@ -17,7 +17,7 @@
 - **RTIRQ** — real-time interrupt priorities (USB, HID, NVMe, audio)
 - **CPU affinity** — isolate cores 2-3 for latency-sensitive tasks
 
-### 🎮 GPU (NVIDIA RTX 4050)
+### 🎮 GPU
 - **NVreg** — MSI, PCIe Gen4, PreserveVideoMemory, PowerMizer
 - **Coolbits 31** — overclocking + fan control
 - **DXVK** — maxFrameLatency=1, async, shader cache
@@ -29,7 +29,7 @@
 - **fstrim** — daily SSD trim (idle priority)
 - **noatime/nodiratime** — reduce disk writes
 
-### 🔊 Audio (PipeWire)
+### 🔊 Audio 
 - **Quantum 512/48000** — low latency
 - **S32LE format** — high precision
 - **Real-time priority** — rt.prio=50, nice=-2
@@ -79,7 +79,7 @@
 |-----------|-------|
 | **Laptop** | LOQ-15IAX9 |
 | **CPU** | Intel Core i5-12450HX (8 cores) |
-| **GPU** | NVIDIA RTX 4050 Laptop |
+| **GPU** | NVIDIA RTX 2050 Laptop |
 | **RAM** | 16GB DDR5 |
 | **Storage** | NVMe SSD |
 | **Audio** | Realtek ALC3287 |
