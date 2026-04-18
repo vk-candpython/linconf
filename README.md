@@ -1,7 +1,7 @@
 # ⚡ linconf
 
 
-**Linux Real-time Low-Latency Configuration Collection**
+**Linux Real-Time Low-Latency Configuration Collection**
 
 - Kernel tuning (Xanmod LTS)
 - CPU/GPU optimization (Intel + NVIDIA)
@@ -10,9 +10,18 @@
 - Security hardening (AppArmor, USBGuard)
 
 
-
-
 <br><br>
+
+
+## ⚠️ Disclaimer
+
+> **Use at your own risk.**  
+> These configurations modify system behavior.  
+> Always backup your data before applying.  
+> Tested only on **LOQ-15IAX9** with Ubuntu/Debian.
+
+
+<br><br><br>
 
 
 
