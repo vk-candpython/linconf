@@ -1,16 +1,15 @@
-# 🌟 linconf
+# ⚡ linconf
 
 
+**Linux Low-Latency Configuration Collection**
+
+- Kernel tuning (Xanmod LTS)
+- CPU/GPU optimization (Intel + NVIDIA)
+- Memory management (ZRAM + tmpfs)
+- Audio stack (PipeWire low-latency)
+- Security hardening (AppArmor, USBGuard)
 
 
-<br><br>
-
-
-## BY (Vladislav Khudash) AGE (17) FROM (UKRAINE 🇺🇦) 
-
-<br>
-
-## I USE THIS CONFIGURATION ON MY LAPTOP (LOQ-15IAX9)
 
 
 <br><br>
