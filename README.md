@@ -109,10 +109,8 @@
 ```bash
 {
     "window.commandCenter": false,
-    "workbench.layoutControl.enabled": false,
     "chat.commandCenter.enabled": false,
     "workbench.startupEditor": "none",
-    "editor.letterSpacing": 0.5,
     "editor.minimap.enabled": false,
     "terminal.integrated.fontSize": 14,
     "editor.hover.delay": 1500,
@@ -126,7 +124,6 @@
     "explorer.confirmDragAndDrop": false,
     "editor.cursorStyle": "line-thin",
     "workbench.iconTheme": "material-icon-theme",
-    "workbench.colorTheme": "Visual Studio Dark - C++",
     "code-runner.runInTerminal": true,
     "breadcrumbs.enabled": false,
     "editor.stickyScroll.enabled": false,
@@ -196,9 +193,9 @@
     "security.workspace.trust.untrustedFiles": "open",
     "liveServer.settings.donotShowInfoMsg": true,
     "terminal.integrated.stickyScroll.enabled": false,
-    "editor.fontFamily": "JetBrains Mono, monospace",
-    "editor.fontWeight": "bold",
-    "editor.fontLigatures": true,
+    "editor.fontFamily": "Fira Code SemiBold, monospace",
+    "editor.fontWeight": "600",
+    "editor.fontLigatures": false,
     "terminal.integrated.defaultProfile.linux": "bash",
     "[cpp]": {
         "editor.wordBasedSuggestions": "off",
@@ -208,7 +205,14 @@
     },
     "editor.unicodeHighlight.invisibleCharacters": false,
     "editor.unicodeHighlight.ambiguousCharacters": false,
-    "workbench.editor.enablePreview": false
+    "workbench.editor.enablePreview": false,
+    "editor.fontSize": 16,
+    "editor.letterSpacing": 0.5,
+    "editor.renderLineHighlight": "all",
+    "editor.lineHeight": 1.5,
+    "workbench.browser.showInTitleBar": false,
+    "workbench.layoutControl.enabled": false,
+    "workbench.colorTheme": "Gruvbox Dark Soft"
 }
 ```
 
