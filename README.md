@@ -104,6 +104,143 @@
 
 
 
+## Safe Eyes
+
+```bash
+# 1
+
+
+sudo apt install safeeyes
+
+
+
+
+# 2
+# ~/.config/safeeyes/safeeyes.json
+
+
+{
+    "allow_postpone": false,
+    "long_break_duration": 600,
+    "long_break_interval": 90,
+    "long_breaks": [
+        {
+            "name": "\u0421\u043b\u0430\u0431\u043e 10\u043c\u0438\u043d?\u0412\u041e\u041b\u042f\u2014\u041d\u041e\u041b\u042c.\u0412\u0421\u0422\u0410\u041d\u042c \u0418 \u0414\u0412\u0418\u0413\u0410\u0419\u0421\u042f!\u0422\u042b-\u0412\u041e\u0418\u041d,\u0430 \u043d\u0435 \u041e\u0412\u041e\u0429!"
+        }
+    ],
+    "meta": {
+        "config_version": "6.0.3"
+    },
+    "persist_state": false,
+    "plugins": [
+        {
+            "enabled": false,
+            "id": "donotdisturb",
+            "settings": {
+                "skip_break_windows": "",
+                "take_break_windows": "",
+                "unfullscreen": true,
+                "while_on_battery": false
+            },
+            "version": "0.0.2"
+        },
+        {
+            "enabled": false,
+            "id": "notification",
+            "version": "0.0.1"
+        },
+        {
+            "enabled": false,
+            "id": "audiblealert",
+            "settings": {
+                "post_break_alert": true,
+                "pre_break_alert": true
+            },
+            "version": "0.0.3"
+        },
+        {
+            "enabled": true,
+            "id": "trayicon",
+            "settings": {
+                "allow_disabling": false,
+                "disable_options": [
+                    {
+                        "time": 30,
+                        "unit": "minute"
+                    },
+                    {
+                        "time": 1,
+                        "unit": "hour"
+                    },
+                    {
+                        "time": 2,
+                        "unit": "hour"
+                    },
+                    {
+                        "time": 3,
+                        "unit": "hour"
+                    }
+                ],
+                "show_time_in_tray": false
+            },
+            "version": "0.0.3"
+        },
+        {
+            "enabled": false,
+            "id": "smartpause",
+            "settings": {
+                "idle_time": 5,
+                "interpret_idle_as_break": false,
+                "postpone_if_active": false
+            },
+            "version": "0.0.3"
+        },
+        {
+            "enabled": true,
+            "id": "screensaver",
+            "settings": {
+                "command": "",
+                "min_seconds": 0.0
+            },
+            "version": "0.0.2"
+        },
+        {
+            "enabled": false,
+            "id": "healthstats",
+            "settings": {
+                "statistics_reset_cron": "0 0 * * *"
+            },
+            "version": "0.0.3"
+        },
+        {
+            "enabled": true,
+            "id": "mediacontrol",
+            "version": "0.0.1"
+        }
+    ],
+    "postpone_duration": 5,
+    "pre_break_warning_time": 1,
+    "random_order": false,
+    "rpc_port": 7200,
+    "short_break_duration": 120,
+    "short_break_interval": 30,
+    "short_breaks": [
+        {
+            "name": "\u0421\u043b\u0430\u0431\u043e \u043d\u0430 120\u0441\u0435\u043a?\u0422\u042b\u2014\u0420\u0410\u0411 \u043f\u0438\u043a\u0441\u0435\u043b\u0435\u0439.\u0421\u041c\u041e\u0422\u0420\u0418 \u0412\u0414\u0410\u041b\u042c \u0438\u043b\u0438 \u041e\u0421\u041b\u0415\u041f\u041d\u0415\u0428\u042c!"
+        }
+    ],
+    "shortcut_disable_time": 0,
+    "shortcut_postpone": 0,
+    "shortcut_skip": 0,
+    "strict_break": true,
+    "use_rpc_server": false
+}
+```
+
+
+<br><br>
+
+
 ## VS CODE
 
 ```bash
@@ -211,9 +348,9 @@
     "editor.lineHeight": 1.5,
     "workbench.browser.showInTitleBar": false,
     "workbench.layoutControl.enabled": false,
-    "workbench.colorTheme": "Gruvbox Dark Soft",
     "editor.fontSize": 15,
-    "workbench.editor.empty.hint": "hidden"
+    "workbench.editor.empty.hint": "hidden",
+    "workbench.colorTheme": "Gruvbox Dark Soft"
 }
 ```
 
