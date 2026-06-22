@@ -1357,86 +1357,98 @@ sudo update && sudo apt install pipewire pipewire-pulse pipewire-audio-client-li
 
 
 context.properties = {
+    log.level                   = 0
     core.daemon                 = true
     core.name                   = pipewire-0
     default.clock.rate          = 48000
-    default.clock.allowed-rates = [48000]
-    default.clock.quantum       = 512
-    default.clock.min-quantum   = 512
+    default.clock.allowed-rates = [ 44100 48000 88200 96000 192000 ]
+    default.clock.quantum       = 256
+    default.clock.min-quantum   = 128
     default.clock.max-quantum   = 1024
     default.clock.quantum-limit = 8192
-    link.max-buffers            = 32
-    module.x11.bell             = true
+    clock.power-of-two-quantum  = true
+    link.max-buffers            = 16
+    mem.allow-mlock             = true
+    module.x11.bell             = false
     module.access               = true
     module.jackdbus-detect      = true
-    vm.overrides                = { default.clock.min-quantum = 512 }
 }
 
 context.spa-libs = {
     audio.convert.* = audioconvert/libspa-audioconvert
-    avb.* = avb/libspa-avb
-    api.alsa.* = alsa/libspa-alsa
-    api.v4l2.* = v4l2/libspa-v4l2
-    api.libcamera.* = libcamera/libspa-libcamera
-    api.bluez5.* = bluez5/libspa-bluez5
-    api.vulkan.* = vulkan/libspa-vulkan
-    api.jack.* = jack/libspa-jack
-    support.* = support/libspa-support
+    avb.*           = avb/libspa-avb
+    api.alsa.*      = alsa/libspa-alsa
+    api.vulkan.*    = vulkan/libspa-vulkan
+    api.jack.*      = jack/libspa-jack
+    support.*       = support/libspa-support
 }
 
 context.modules = [
-    { name = libpipewire-module-rt 
-      args = { nice.level = -2 rt.prio = 50 } 
-      flags = [ ifexists nofail ] 
+    { name  = libpipewire-module-rt
+      args  = { nice.level = -7 rt.prio = 77 }
+      flags = [ ifexists nofail ]
     }
-    { name = libpipewire-module-protocol-native }
-    { name = libpipewire-module-profiler }
-    { name = libpipewire-module-metadata }
-    { name = libpipewire-module-spa-device-factory }
-    { name = libpipewire-module-spa-node-factory }
-    { name = libpipewire-module-client-node }
-    { name = libpipewire-module-client-device }
-    { name = libpipewire-module-portal flags = [ ifexists nofail ] }
-    { name = libpipewire-module-access condition = [ { module.access = true } ] }
-    { name = libpipewire-module-adapter }
-    { name = libpipewire-module-link-factory }
-    { name = libpipewire-module-session-manager }
-    { name = libpipewire-module-x11-bell 
-      flags = [ ifexists nofail ] 
-      condition = [ { module.x11.bell = true } ] 
+    { name  = libpipewire-module-rtkit
+      flags = [ ifexists nofail ]
     }
-    { name = libpipewire-module-jackdbus-detect 
-      flags = [ ifexists nofail ] 
-      condition = [ { module.jackdbus-detect = true } ] 
-    }
+    { name  = libpipewire-module-protocol-native }
+    { name  = libpipewire-module-profiler }
+    { name  = libpipewire-module-metadata }
+    { name  = libpipewire-module-spa-device-factory }
+    { name  = libpipewire-module-spa-node-factory }
+    { name  = libpipewire-module-client-node }
+    { name  = libpipewire-module-client-device }
+    { name  = libpipewire-module-portal flags = [ ifexists nofail ] }
+    { name  = libpipewire-module-access condition = [ { module.access = true } ] }
+    { name  = libpipewire-module-adapter }
+    { name  = libpipewire-module-link-factory }
+    { name  = libpipewire-module-session-manager }
+    { name  = libpipewire-module-x11-bell flags = [ ifexists nofail ] condition = [ { module.x11.bell = true } ] }
+    { name  = libpipewire-module-jackdbus-detect flags = [ ifexists nofail ] condition = [ { module.jackdbus-detect = true } ] }
 ]
 
 context.objects = [
     { factory = spa-node-factory
       args = {
-          factory.name            = api.alsa.pcm.sink
-          node.name               = HighQuality-Sink
-          node.description        = "ALSA Output (Low-Latency)"
-          audio.format            = "S32LE"
-          audio.rate              = 48000
-          audio.channels          = 2
-          resample.quality        = 10
-          channelmix.normalize    = false
-          channelmix.upmix        = false
-          channelmix.upmix-method = psd
-          node.latency            = 512/48000
+          factory.name                    = api.alsa.pcm.sink
+          node.name                       = HighQuality-Sink
+          node.description                = "ALSA Output (Low-Latency)"
+          audio.format                    = "S32LE"
+          audio.rate                      = 48000
+          audio.channels                  = 2
+          resample.quality                = 15
+          channelmix.normalize            = false
+          channelmix.upmix                = false
+          channelmix.upmix-method         = psd
+          node.latency                    = 256/48000
+          node.pause-on-idle              = false
+          api.alsa.headroom               = 256
+          api.alsa.period-size            = 128
+          api.alsa.disable-batch          = true
+          api.alsa.bypass-plugins         = true
+          priority.session                = 1000
+          priority.driver                 = 1000
+          session.suspend-timeout-seconds = 0
       }
     }
     { factory = spa-node-factory
       args = {
-          factory.name     = api.alsa.pcm.source
-          node.name        = HighQuality-Source
-          node.description = "ALSA Input (Low-Latency)"
-          audio.format     = "S32LE"
-          audio.rate       = 48000
-          audio.channels   = 2
-          resample.quality = 10
-          node.latency     = 512/48000
+          factory.name                    = api.alsa.pcm.source
+          node.name                       = HighQuality-Source
+          node.description                = "ALSA Input (Low-Latency)"
+          audio.format                    = "S32LE"
+          audio.rate                      = 48000
+          audio.channels                  = 2
+          resample.quality                = 15
+          node.latency                    = 256/48000
+          node.pause-on-idle              = false
+          api.alsa.headroom               = 256
+          api.alsa.period-size            = 128
+          api.alsa.disable-batch          = true
+          api.alsa.bypass-plugins         = true
+          priority.session                = 1000
+          priority.driver                 = 1000
+          session.suspend-timeout-seconds = 0
       }
     }
 ]
@@ -1446,26 +1458,25 @@ alsa.properties = {
     alsa.format        = [ "S32LE" "F32LE" ]
     alsa.rate          = { min=48000 max=48000 }
     alsa.channels      = { min=2 max=2 }
-    alsa.period-bytes  = { min=2048 max=65536 }
-    alsa.buffer-bytes  = { min=8192 max=131072 }
+    alsa.period-bytes  = { min=1024 max=65536 }
+    alsa.buffer-bytes  = { min=4096 max=131072 }
     alsa.volume-method = "physical"
 }
 
-context.exec = []
-
-pulse.cmd = [
-    { cmd = "load-module" args = "module-always-sink" flags = [] }
-]
-
 stream.properties = {
-    node.latency   = 512/48000
-    dither.method  = "shibata"
+    node.latency     = 256/48000
+    resample.quality = 15
+    dither.method    = "shibata"
 }
 
 pulse.properties = {
     server.address = ["unix:native"]
-    vm.overrides   = { pulse.min.quantum = 512/48000 }
+    vm.overrides   = { pulse.min.quantum = 128/48000 }
 }
+
+pulse.cmd = [
+    { cmd = "load-module" args = "module-always-sink" flags = [] }
+]
 
 pulse.rules = [
     { matches = [] actions = {} }
@@ -1479,11 +1490,15 @@ pulse.rules = [
 
 
 context.properties = {
+    log.level                   = 0
     default.clock.rate          = 48000
-    default.clock.quantum       = 512
-    default.clock.min-quantum   = 512
+    default.clock.quantum       = 256
+    default.clock.min-quantum   = 128
     default.clock.max-quantum   = 1024
     default.clock.quantum-limit = 8192
+    clock.power-of-two-quantum  = true
+    link.max-buffers            = 16
+    mem.allow-mlock             = true
 }
 
 context.spa-libs = {
@@ -1492,12 +1507,18 @@ context.spa-libs = {
 }
 
 context.modules = [
-    { name = libpipewire-module-rt args = { nice.level = -2 } flags = [ ifexists nofail ] }
-    { name = libpipewire-module-protocol-native }
-    { name = libpipewire-module-client-node }
-    { name = libpipewire-module-adapter }
-    { name = libpipewire-module-metadata }
-    { name = libpipewire-module-protocol-pulse }
+    { name  = libpipewire-module-rt
+      args  = { nice.level = -7 rt.prio = 77 }
+      flags = [ ifexists nofail ]
+    }
+    { name  = libpipewire-module-rtkit
+      flags = [ ifexists nofail ]
+    }
+    { name  = libpipewire-module-protocol-native }
+    { name  = libpipewire-module-client-node }
+    { name  = libpipewire-module-adapter }
+    { name  = libpipewire-module-metadata }
+    { name  = libpipewire-module-protocol-pulse }
 ]
 
 context.exec = []
@@ -1507,19 +1528,19 @@ pulse.cmd = [
 ]
 
 stream.properties = {
-    node.latency            = 512/48000
-    resample.quality        = 10
+    node.latency            = 256/48000
+    resample.quality        = 15
     channelmix.normalize    = false
     channelmix.upmix        = false
     channelmix.upmix-method = psd
     audio.format            = "S32LE"
-	dither.method           = "shibata"
+    dither.method           = "shibata"
 }
 
 pulse.properties = {
     server.address       = ["unix:native"]
     pulse.default.format = "S32LE"
-    vm.overrides         = { pulse.min.quantum = 512/48000 }
+    vm.overrides         = { pulse.min.quantum = 128/48000 }
 }
 
 pulse.rules = [
@@ -1553,12 +1574,11 @@ context.modules = [
 ]
 
 stream.properties = {
-	audio.format            = "S32LE" 
-	audio.rate              = 48000
-    node.latency            = 512/48000
-    resample.quality        = 10
-	dither.method           = "shibata"
-    dither.noise            = 2
+    audio.format            = "S32LE"
+    audio.rate              = 48000
+    node.latency            = 256/48000
+    resample.quality        = 15
+    dither.method           = "shibata"
     channelmix.normalize    = false
     channelmix.mix-lfe      = true
     channelmix.upmix        = false
@@ -1575,11 +1595,14 @@ stream.properties = {
 context.properties = {
     log.level                   = 0
     default.clock.rate          = 48000
-	default.clock.allowed-rates = [ 44100 48000 ]
-    default.clock.quantum       = 512
-    default.clock.min-quantum   = 512
+    default.clock.allowed-rates = [ 44100 48000 88200 96000 192000 ]
+    default.clock.quantum       = 256
+    default.clock.min-quantum   = 128
     default.clock.max-quantum   = 1024
     default.clock.quantum-limit = 8192
+    clock.power-of-two-quantum  = true
+    link.max-buffers            = 16
+    mem.allow-mlock             = true
 }
 
 context.spa-libs = {
@@ -1590,7 +1613,10 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { rt.prio = 50 nice.level = -1 }
+      args  = { nice.level = -7 rt.prio = 77 }
+      flags = [ ifexists nofail ]
+    }
+    { name  = libpipewire-module-rtkit
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-protocol-native }
@@ -1601,17 +1627,10 @@ context.modules = [
     { name  = libpipewire-module-session-manager }
 ]
 
-context.objects = [
-    { factory = spa-device-factory
-      args    = { factory.name = api.alsa.enum.udev }
-    }
-]
-
 stream.properties = {
-    node.latency            = 512/48000
-    resample.quality        = 10
-	dither.method           = "shibata"
-    dither.noise            = 2
+    node.latency            = 256/48000
+    resample.quality        = 15
+    dither.method           = "shibata"
     channelmix.normalize    = false
     channelmix.mix-lfe      = true
     channelmix.upmix        = false
@@ -1621,12 +1640,12 @@ stream.properties = {
 }
 
 alsa.properties = {
-    alsa.access        = [ MMAP_INTERLEAVED MMAP_NONINTERLEAVED RW_INTERLEAVED RW_NONINTERLEAVED ]
-    alsa.format        = [ FLOAT S32 ]
-    alsa.rate          = { min=44100 max=48000 }
+    alsa.access        = [ MMAP_INTERLEAVED MMAP_NONINTERLEAVED ]
+    alsa.format        = [ "S32LE" "F32LE" ]
+    alsa.rate          = { min=48000 max=48000 }
     alsa.channels      = { min=2 max=2 }
     alsa.period-bytes  = { min=1024 max=65536 }
-    alsa.buffer-bytes  = { min=8192 max=131072 }
+    alsa.buffer-bytes  = { min=4096 max=131072 }
     alsa.volume-method = "physical"
 }
 
@@ -1638,7 +1657,15 @@ alsa.properties = {
 
 
 context.properties = {
-    log.level = 0
+    log.level                   = 0
+    default.clock.rate          = 48000
+    default.clock.quantum       = 256
+    default.clock.min-quantum   = 128
+    default.clock.max-quantum   = 1024
+    default.clock.quantum-limit = 8192
+    clock.power-of-two-quantum  = true
+    link.max-buffers            = 16
+    mem.allow-mlock             = true
 }
 
 context.spa-libs = {
@@ -1647,20 +1674,39 @@ context.spa-libs = {
 }
 
 context.modules = [
-    { name = libpipewire-module-rt args = { rt.prio = 50 nice.level = -1 } flags = [ ifexists nofail ] }
-    { name = libpipewire-module-protocol-native }
-    { name = libpipewire-module-client-node }
-    { name = libpipewire-module-metadata }
+    { name  = libpipewire-module-rt
+      args  = { nice.level = -7 rt.prio = 77 }
+      flags = [ ifexists nofail ]
+    }
+    { name  = libpipewire-module-rtkit
+      flags = [ ifexists nofail ]
+    }
+    { name  = libpipewire-module-protocol-native }
+    { name  = libpipewire-module-client-node }
+    { name  = libpipewire-module-metadata }
 ]
 
+stream.properties = {
+    audio.format            = "S32LE"
+    audio.rate              = 48000
+    node.latency            = 256/48000
+    resample.quality        = 15
+    dither.method           = "shibata"
+    channelmix.normalize    = false
+    channelmix.mix-lfe      = true
+    channelmix.upmix        = false
+    channelmix.upmix-method = psd
+}
+
 jack.properties = {
-    node.latency           = 512/48000
+    node.latency           = 256/48000
     node.rate              = 48000
-    node.quantum           = 512
+    node.quantum           = 256
     node.lock-quantum      = true
     jack.self-connect-mode = allow
     jack.merge-monitor     = false
-    resample.quality       = 10
+    resample.quality       = 15
+    dither.method          = "shibata"
 }
 
 
