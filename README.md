@@ -1886,7 +1886,7 @@ sudo apt update && sudo apt install vkbasalt
 
 
 # 2
-# /home/{USER}/.config/vkBasalt/vkBasalt.conf
+# /home/{YOUR USER}/.config/vkBasalt/vkBasalt.conf
 
 
 # --- General Settings & Effects Pipeline ---
@@ -2054,7 +2054,7 @@ LocalSocketMode 660
 User clamav
 
 # --- Мониторинг в реальном времени (On-Access) ---
-OnAccessIncludePath /home/vladislav_khudash
+OnAccessIncludePath /home/{YOUR USER}
 OnAccessExcludeUname clamav
 OnAccessPrevention false
 OnAccessMaxFileSize 300M
