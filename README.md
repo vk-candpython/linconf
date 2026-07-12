@@ -247,6 +247,8 @@ sudo apt install safeeyes
 {
     // === WORKBENCH & UI (Интерфейс) ===
     "workbench.colorTheme"                         : "Kanagawa",
+    "workbench.preferredDarkColorTheme"            : "Kanagawa",
+    "workbench.preferredHighContrastColorTheme"    : "Kanagawa",
     "workbench.iconTheme"                          : "material-icon-theme",
     "workbench.startupEditor"                      : "none",
     "workbench.editor.empty.hint"                  : "hidden",
@@ -272,12 +274,14 @@ sudo apt install safeeyes
     "editor.fontLigatures"                         : false,
 
     // === EDITOR: VISUALS & UX (Отображение и скролл) ===
+    "editor.lineNumbers"                           : "on",
     "editor.cursorStyle"                           : "line-thin",
     "editor.cursorBlinking"                        : "smooth",
     "editor.cursorSmoothCaretAnimation"            : "on",
     "editor.smoothScrolling"                       : true,
     "editor.minimap.enabled"                       : false,
     "editor.glyphMargin"                           : false,
+    "editor.folding"                               : false,
     "editor.stickyScroll.enabled"                  : false,
     "editor.renderLineHighlight"                   : "all",
     "editor.renderWhitespace"                      : "selection",
@@ -451,8 +455,8 @@ vm.vfs_cache_pressure              = 30
 vm.laptop_mode                     = 5
 vm.dirty_ratio                     = 10
 vm.dirty_background_ratio          = 5
-vm.dirty_expire_centisecs          = 3000
-vm.dirty_writeback_centisecs       = 3000
+vm.dirty_expire_centisecs          = 1000
+vm.dirty_writeback_centisecs       = 1000
 
 
 # --- Filesystem Protection ---
@@ -465,7 +469,7 @@ fs.inotify.max_user_watches        = 1048576
 
 # --- Networking (BBR + Low Latency) ---
 # High-speed networking with minimum bufferbloat
-net.core.default_qdisc             = fq_codel
+net.core.default_qdisc             = fq
 net.ipv4.tcp_congestion_control    = bbr
 net.core.netdev_max_backlog        = 10000
 net.core.rmem_max                  = 16777216
@@ -509,7 +513,7 @@ sudo sysctl --system
 
 
 # Root Partition (SSD Optimized)
-UUID={YOUR UUID}                           /                ext4    defaults,noatime,nodiratime,commit=30,errors=remount-ro      0       1
+UUID={YOUR UUID}                           /                ext4    defaults,noatime,data=writeback,journal_ioprio=0,nobarrier,commit=60,errors=remount-ro      0       1
 
 
 # Swap File (Low priority to keep it as a last resort)
@@ -520,7 +524,6 @@ UUID={YOUR UUID}                           /                ext4    defaults,noa
 tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=10G,nosuid,nodev             0       0
 tmpfs                                      /var/log         tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev            0       0
 tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=1G,nosuid,nodev              0       0
-tmpfs                                      /var/backups     tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev            0       0
 ```
 
 
@@ -592,42 +595,7 @@ GRUB_TERMINAL=console
 GRUB_COLOR_NORMAL="white/black"
 GRUB_COLOR_HIGHLIGHT="black/white"
 GRUB_CMDLINE_LINUX=""
-GRUB_CMDLINE_LINUX_DEFAULT="                    \
-    quiet                                       \
-    splash                                      \
-    fbcon=nodefer                               \
-    vsyscall=none                               \
-    pti=on                                      \
-    slab_nomerge                                \
-    page_alloc.shuffle=1                        \
-    mitigations=auto                            \
-    threadirqs					                \
-    skew_tick=1                                 \
-    tsx=off                                     \
-    preempt=voluntary                           \
-    intel_pstate=active                         \
-    intel_pstate.hwp_only=1                     \
-    cpufreq.default_governor=schedutil          \
-    nouveau.modeset=0                           \
-    i915.fastboot=1                             \
-    i915.semaphores=1                           \
-    transparent_hugepage=madvise                \
-    mem_sleep_default=deep                      \
-    zswap.enabled=1                             \
-    zswap.compressor=zstd                       \
-    zswap.zpool=zsmalloc                        \
-    nvme_core.default_ps_max_latency_us=3000    \
-    nvme_core.io_timeout=255                    \
-    nvme_core.admin_timeout=60                  \
-    nvme.use_threaded_interrupts=1              \
-    nosoftlockup                                \
-    nowatchdog                                  \
-    nmi_watchdog=0                              \
-    audit=0                                     \
-    printk.time=0                               \
-    loglevel=0                                  \
-    systemd.show_status=0                       \
-"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=auto threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active intel_pstate.hwp_only=1 nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=3000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nvme.use_threaded_interrupts=1 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
 
 
 
@@ -764,62 +732,36 @@ blacklist amd76x_edac
 # 2
 # /etc/modprobe.d/nvidia.conf 
 
-# --- Video Memory & Latency Optimizations ---
-# Ensure video memory is preserved across suspend/resume cycles
+
+# --- Видеопамять и гибернация ---
+# Сохранять видеопамять при переходе в сон (убирает артефакты и падение приложений)
 options nvidia NVreg_PreserveVideoMemoryAllocations=1
+# ИСПРАВЛЕНО: перенесено в /var/tmp. Папка /tmp полностью очищается при перезагрузке,
+# из-за чего прошлые конфиги ломали режим сна (так как папка /tmp/nvidia исчезала).
+options nvidia NVreg_TemporaryFilePath=/var/tmp
 
-# Set temporary storage path for video memory data during suspend
-options nvidia NVreg_TemporaryFilePath=/tmp/nvidia
-
-# Use Page Attribute Table (PAT) for better CPU-to-GPU communication performance
+# --- Максимум производительности шины CPU-GPU ---
+# Использовать PAT (Page Attribute Table) — дает бритвенную четкость и скорость передачи текстур
 options nvidia NVreg_UsePageAttributeTable=1
-
-# Do not pre-initialize all system memory allocations to save time/resources
-options nvidia NVreg_InitializeSystemMemoryAllocations=0
-
-
-# --- Bus & Interface Settings ---
-# Force PCIe Gen4 speeds (standard for mobile 40-series GPUs)
-options nvidia NVreg_EnablePCIeGen4=1
-
-# Enable Message Signaled Interrupts (MSI) to reduce CPU overhead and latency
+# Включить Message Signaled Interrupts — критически снижает инпут-лаг и задержки по HDMI
 options nvidia NVreg_EnableMSI=1
-
-# Enable Stream Memory Operations for better asynchronous data handling
+# Асинхронные операции с памятью для параллельной обработки кадров
 options nvidia NVreg_EnableStreamMemOPs=1
-# Skip checking PCI config space for faster initialization
-options nvidia NVreg_CheckPCIConfigSpace=0
-
-# Disable NvLink as it is not present/used on laptop hardware
+# Отключить нефизическую для ноута шину NvLink (высвобождает ресурсы CPU)
 options nvidia NVreg_NvLinkDisable=1
+# Включение сопроцессора GSP (убирает микрофризы интерфейса, разгружает CPU)
+options nvidia NVreg_EnableGpuFirmware=1
 
+# --- Настройка HDMI, герцовки и питания ---
+# PowerMizerEnable=0x1       - контроль частот активен
+# GpuPowerMizerMode=0x3      - Адаптивный режим (холодный в браузере, мощный в задачах)
+# EnableBrightnessControl=1  - контроль яркости экрана ноутбука
+# RMEdgeIntrCheck=0          - отключение проверки прерываний панели (убирает статтеринг на внешнем мониторе)
+options nvidia NVreg_RegistryDwords="PowerMizerEnable=0x1;GpuPowerMizerMode=0x3;EnableBrightnessControl=1;RMEdgeIntrCheck=0"
 
-# --- Power Management (Battery & Performance Balance) ---
-# PowerMizerEnable=0x1: Enable NVIDIA PowerMizer power management
-# GpuPowerMizerMode=0x2: Set to Adaptive mode (downclocks on idle, max on load)
-# EnableBrightnessControl=1: Ensure backlight control works on laptops
-options nvidia NVreg_RegistryDwords="PowerMizerEnable=0x1;EnableBrightnessControl=1;ThermalConfiguration=1;FanControlState=1;GpuPowerMizerMode=0x2;AdaptivePowerMizer=1"
-
-# PersistenceMode=0: Allow the GPU to fully power down when not in use (Crucial for battery)
-options nvidia NVreg_PersistenceMode=0
-
-
-# --- Buffers & Limits ---
-# Set the size of the internal memory pool in MB
-options nvidia NVreg_MemoryPoolSize=256
-
-# Limit for remapping memory to avoid address space fragmentation
-options nvidia NVreg_RemapLimit=64
-
-
-# --- Device Node Permissions ---
-# Root owns the device files
+# --- Права доступа к устройствам (стандарт Ubuntu/Debian) ---
 options nvidia NVreg_DeviceFileUID=0
-
-# Assign device to GID 44 (standard 'video' group in Ubuntu/Debian)
 options nvidia NVreg_DeviceFileGID=44
-
-# Set read/write permissions for owner and group
 options nvidia NVreg_DeviceFileMode=0660
 
 
@@ -828,16 +770,17 @@ options nvidia NVreg_DeviceFileMode=0660
 # 3
 # /etc/modprobe.d/usbhid.conf
 
+
 # --- USB HID Latency Optimizations ---
 
-# Set mouse polling rate to 500Hz (2ms interval) for lower input lag
-options usbhid mousepoll=2
+# Set mouse polling rate to 1000Hz (1ms interval) for lower input lag
+options usbhid mousepoll=1
 
-# Set joystick/gamepad polling rate to 500Hz
-options usbhid jspoll=2
+# Set joystick/gamepad polling rate to 1000Hz
+options usbhid jspoll=1
 
-# Set keyboard polling rate to 500Hz
-options usbhid kbpoll=2
+# Set keyboard polling rate to 1000Hz
+options usbhid kbpoll=1
 
 # Increase timeout to 200ms to prevent lag when waking up wireless devices
 options usbhid timeout=200
@@ -897,15 +840,11 @@ EndSection
 # --- System Paths ---
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 
-
-# --- OpenMP & Parallelism (6 Cores Optimized) ---
-OMP_NUM_THREADS=6
+# --- OpenMP & Parallelism (Intel Thread Director Adaptive Optimization) ---
 OMP_STACKSIZE=8M
-OMP_PROC_BIND=close
-OMP_DYNAMIC=false
+OMP_DYNAMIC=true
 OMP_WAIT_POLICY=passive
 OMP_NESTED=false
-
 
 # --- Memory & Network (Extreme Performance) ---
 GLIBC_TUNABLES="glibc.malloc.trim_threshold=262144:glibc.malloc.mmap_threshold=262144:glibc.malloc.mmap_max=32768:glibc.malloc.arena_max=4"
@@ -917,17 +856,14 @@ NETWORK_BUFFER_SIZE=32768
 TCP_QUICKACK=1
 PYTHONOPTIMIZE=1
 
-
 # --- Java & Tools ---
 _JAVA_OPTIONS="-XX:+UseG1GC -XX:MaxGCPauseMillis=100"
 JAVA_TOOL_OPTIONS="-Xms512m -Xmx2g"
-
 
 # --- NVIDIA (Ultra Low Latency & Stealth) ---
 __GLX_VENDOR_LIBRARY_NAME=nvidia
 __GL_PRIORITY=HIGH
 __GL_GPU_MEMORY_ALLOCATION=100
-__GL_NextGenCompiler=1
 __GL_ASYNC_FLIP=1
 __GL_ALLOW_UNOFFICIAL_PROTOCOL=0
 __GL_MaxFramesAllowed=1
@@ -937,13 +873,11 @@ __GLX_DRISW=0
 __GL_GSYNC_ALLOWED=1
 __GL_YIELD=USLEEP
 __GL_OPTIMIZE_FOR_LATENCY=1
-__GL_GPU_THREAD_PRIORITY=HIGH
 __GL_LOG_VERBOSE=0
 __GL_DEBUG_LEVEL=0
 __GL_SHADER_DISK_CACHE=1
 __GL_SHADER_DISK_CACHE_PATH="/home/{YOUR USER}/.nvidia-shader-cache"
 __GL_SHADER_DISK_CACHE_COMPRESS=1
-
 
 # --- Mesa & Vulkan (Zero Overhead) ---
 MESA_DEBUG=0
@@ -957,24 +891,20 @@ VK_SHADER_CACHE_DISABLE=0
 VK_EXT_swapchain_maintenance1=1
 VK_PRESENT_MODE=mailbox
 
-
 # --- Wayland & Compositor ---
 GBM_BACKEND=nvidia-drm
-WLR_NO_HARDWARE_CURSOR=0
+WLR_NO_HARDWARE_CURSOR=1
 WLR_RENDER_MODE=mailbox
 EGL_PLATFORM=wayland
 
-
 # --- DXVK & Video (Silent & Fast) ---
 DXVK_LOG_LEVEL=none
-DXVK_ASYNC=1
 DXVK_STATE_CACHE=1
 DXVK_SHADER_DISK_CACHE_PATH="/home/{YOUR USER}/.dxvk-cache"
 VDPAU_LOG_LEVEL=0
 LIBVA_MESSAGING_LEVEL=0
 CUDA_CACHE_PATH="/home/{YOUR USER}/.cuda-cache"
 CUDA_LAUNCH_BLOCKING=0
-
 
 # --- Intel (Efficiency & Hardware Scalability) ---
 INTEL_DEBUG=null
@@ -988,10 +918,8 @@ INTEL_HW_BLIT=1
 INTEL_COMPRESSION_RENDER_TARGET=1
 INTEL_FAST_CLEAR=1
 
-
 # --- Chromium (Wayland Native + HW Overlays + No Logs) ---
 CHROMIUM_FLAGS="--ozone-platform-hint=wayland --enable-gpu-rasterization --enable-zero-copy --enable-native-gpu-memory-buffers --enable-hardware-overlays --enable-features=Vulkan,VulkanFromANGLE,DefaultAngleVulkan,RunVideoAcceleratorOnGpuProcess --ignore-gpu-blocklist --log-level=3 --no-report-upload --disable-logging --disable-breakpad"
-
 
 # --- GTK, GDK & UI (Minimal Overhead) ---
 GTK_ENABLE_ANIMATIONS=0
@@ -1000,7 +928,6 @@ GDK_USE_COMPOSITING=0
 GDK_DEBUG=none
 NO_AT_BRIDGE=1
 
-
 # --- SDL & QT ---
 SDL_VIDEODRIVER=wayland,x11
 QT_QPA_PLATFORM=wayland
@@ -1008,13 +935,11 @@ QT_LOGGING_RULES="*.debug=false;*.info=false;*.warning=false"
 QT_QUICK_NO_ANIMATION=1
 QT_OPENGL_NO_ERROR_CHECK=1
 
-
 # --- Audio & Pipewire (Low Latency Stable) ---
 PIPEWIRE_DEBUG=0
 PIPEWIRE_ENABLE_3D=1
 PIPEWIRE_DISABLE_LATENCY_SMOOTHING=0
 PIPEWIRE_CPU_PRIORITY=high
-
 
 # --- Wine & Steam (Pure Silent) ---
 WINEDEBUG=-all
@@ -1031,8 +956,8 @@ STEAM_DEBUG=0
 
 ```bash
 # --- 1. Rendering & Efficiency ---
-# Triple buffering for smoothness, VRR to save power on static images, and Unredirect for full-screen performance
-gsettings set org.gnome.mutter experimental-features "['triple-buffering', 'variable-refresh-rate', 'unredirect-fullscreen-windows']"
+# Triple buffering for smoothness
+gsettings set org.gnome.mutter experimental-features "['triple-buffering']"
 
 
 # --- 2. Power Management (Battery Life Optimization) ---
@@ -1091,21 +1016,21 @@ gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 30
 
 
 APT::Get::Assume-Yes "false";
-APT::Get::Quiet "true";
+APT::Get::Quiet      "true";
 
 
-APT::Acquire::Retries "3";
-Acquire::By-Hash "yes";
+APT::Acquire::Retries      "3";
+Acquire::By-Hash 		   "yes";
 Acquire::Check-Valid-Until "true";
 
 
-Dir::Cache::archives "/var/cache/apt/archives";
-Dir::Cache::pkgcache "/var/cache/apt/pkgcache.bin";
+Dir::Cache::archives    "/var/cache/apt/archives";
+Dir::Cache::pkgcache    "/var/cache/apt/pkgcache.bin";
 Dir::Cache::srcpkgcache "/var/cache/apt/srcpkgcache.bin";
 
 
-APT::Install-Recommends "true";
-APT::Install-Suggests "false";
+APT::Install-Recommends "false";
+APT::Install-Suggests   "false";
 
 
 DPKg::Options {
@@ -1114,14 +1039,14 @@ DPKg::Options {
 }
 
 
-APT::Periodic::Update-Package-Lists "1";
-APT::Periodic::Download-Upgradeable-Packages "0"; 
-APT::Periodic::AutocleanInterval "1";           
-APT::Periodic::Unattended-Upgrade "0";
-APT::Periodic::Verbose "0";
+APT::Periodic::Update-Package-Lists          "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval             "0";  
+APT::Periodic::Unattended-Upgrade            "0";
+APT::Periodic::Verbose                       "0";
 
 
-Dir::Log "/dev/null";
+Dir::Log           "/dev/null";
 Dir::Log::Terminal "/dev/null";
 ```
 
@@ -1147,22 +1072,22 @@ sudo systemctl enable --now rtirq
 
 
 # --- Priority List ---
-RTIRQ_NAME_LIST="usb hid nvme snd"
-RTIRQ_HIGH_LIST="usb hid nvme"
+RTIRQ_NAME_LIST="xhci nvme snd"
+RTIRQ_HIGH_LIST="xhci nvme"
 
 
 # --- Priority Settings ---
-RTIRQ_PRIO_HIGH=70
-RTIRQ_PRIO_DECR=2
-RTIRQ_PRIO_LOW=50
+RTIRQ_PRIO_HIGH=85
+RTIRQ_PRIO_DECR=5
+RTIRQ_PRIO_LOW=60
 RTIRQ_RESET_ALL=0
 RTIRQ_SCHED="fifo"
 
 RTIRQ_SPREAD=1
 
 # --- CPU Affinity ---
-RTIRQ_CPUS="2-3"
-IRQBALANCE_BANNED_CPUS="00000000-00000000-00000000-0000000c" # Маска для ядер 2-3
+RTIRQ_CPUS=""
+IRQBALANCE_BANNED_CPUS=""
 
 
 # --- Real-Time Clocks ---
@@ -1200,48 +1125,38 @@ sudo systemctl enable --now thermald
 <?xml version="1.0"?>
 <ThermalConfiguration>
     <Platform>
-        <Name>Universal_PC_Laptop</Name>
-        <ProductName>Universal_HighPerformance</ProductName>
+        <Name>Lenovo LOQ Custom Performance</Name>
         <ThermalZones>
             <ThermalZone>
-                <Name>CPU Thermal Zone</Name>
+                <Type>cpu</Type>
                 <TripPoints>
                     <TripPoint>
                         <Type>passive</Type>
-                        <Temperature>85</Temperature>
-                        <Control>throttle</Control>
+                        <Temperature>85000</Temperature>
+                        <ControlType>PARALLEL</ControlType>
+                        <CoolingDeviceBind>
+                            <Type>intel_pstate</Type>
+                        </CoolingDeviceBind>
                     </TripPoint>
+
                     <TripPoint>
                         <Type>passive</Type>
-                        <Temperature>95</Temperature>
-                        <Control>throttle</Control>
+                        <Temperature>95000</Temperature>
+                        <ControlType>PARALLEL</ControlType>
+                        <CoolingDeviceBind>
+                            <Type>rapl_controller</Type>
+                        </CoolingDeviceBind>
                     </TripPoint>
+
                     <TripPoint>
                         <Type>critical</Type>
-                        <Temperature>105</Temperature>
+                        <Temperature>105000</Temperature>
                         <Control>shutdown</Control>
                     </TripPoint>
                 </TripPoints>
             </ThermalZone>
         </ThermalZones>
     </Platform>
-
-    <ThermalSettings>
-        <AC>
-            <CPU_Governor>performance</CPU_Governor>
-            <GPU_Governor>performance</GPU_Governor>
-            <FanProfile>aggressive</FanProfile>
-            <Max_CPU_Power>100</Max_CPU_Power>
-            <Max_GPU_Power>100</Max_GPU_Power>
-        </AC>
-        <BAT>
-            <CPU_Governor>powersave</CPU_Governor>
-            <GPU_Governor>powersave</GPU_Governor>
-            <FanProfile>balanced</FanProfile>
-            <Max_CPU_Power>45</Max_CPU_Power>
-            <Max_GPU_Power>40</Max_GPU_Power>
-        </BAT>
-    </ThermalSettings>
 </ThermalConfiguration>
 ```
 
@@ -1290,8 +1205,6 @@ CPU_BOOST_ON_BAT                    = 0
 
 CPU_ENERGY_PERF_POLICY_ON_AC        = performance
 CPU_ENERGY_PERF_POLICY_ON_BAT       = balance_power
-CPU_HWP_ON_AC                       = performance
-CPU_HWP_ON_BAT                      = balance_power
 
 CPU_MAX_PERF_ON_BAT                 = 30
 
@@ -1299,18 +1212,14 @@ CPU_MAX_PERF_ON_BAT                 = 30
 # --- GPU Management (NVIDIA/Radeon) ---
 NVIDIA_DYNAMIC_POWERMGMT_ON_AC      = 0
 NVIDIA_DYNAMIC_POWERMGMT_ON_BAT     = 1
-NVIDIA_PM_ON_AC                     = performance
-NVIDIA_PM_ON_BAT                    = auto
 
 
 # --- Storage & PCIe ---
-NVME_POWERMGMT_ON_AC                = 0
-NVME_POWERMGMT_ON_BAT               = 1
 PCIE_ASPM_ON_AC                     = performance
 PCIE_ASPM_ON_BAT                    = powersave
 
 
-# --- Connectivity & USB ---
+# --- Connectivity ---
 DEVICES_TO_DISABLE_ON_STARTUP       = "bluetooth"
 DEVICES_TO_DISABLE_ON_BAT           = "bluetooth"
 
@@ -1384,23 +1293,25 @@ sudo systemctl enable --now preload
 
 
 [model]
-cycle = 40
+cycle          = 30
 usecorrelation = true
-minsize = 2000000
-memtotal = 10
-memfree = 40
-memcached = 15
+
+minsize   = 50000
+memtotal  = 80
+memfree   = 20
+memcached = 30
 
 
 [system]
-doscan = true
+doscan    = true
 dopredict = true
-autosave = 3600
+autosave  = 3600
 mapprefix = /usr/;/lib/;/var/cache/;!/dev
 exeprefix = !/usr/sbin/;!/usr/local/sbin/;/usr/bin/;/usr/local/bin/
-processes = 15
+
+processes    = 50
 sortstrategy = 0
-debug = false
+debug        = false
 ```
 
 
@@ -1425,7 +1336,7 @@ managed=false
 
 [device]
 wifi.scan-rand-mac-address=yes
-wifi.powersave=3
+wifi.powersave=2
 
 
 [connection]
@@ -1490,7 +1401,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 77 }
+      args  = { nice.level = -7 rt.prio = 70 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-rtkit
@@ -1613,7 +1524,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 77 }
+      args  = { nice.level = -7 rt.prio = 70 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-rtkit
@@ -1718,7 +1629,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 77 }
+      args  = { nice.level = -7 rt.prio = 70 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-rtkit
@@ -1780,7 +1691,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 77 }
+      args  = { nice.level = -7 rt.prio = 70 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-rtkit
@@ -1818,6 +1729,42 @@ jack.properties = {
 
 
 # 7
+# /home/{YOUR USER}/.config/wireplumber/wireplumber.conf.d/50-alsa-lowlatency.conf
+
+
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        device.name = "~alsa_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        audio.format = "S32LE"
+        audio.rate = 48000
+        audio.channels = 2
+        audio.position = [ FL FR ]
+        resample.quality = 15
+        channelmix.normalize = false
+        channelmix.upmix = false
+        channelmix.mix-lfe = false
+        api.alsa.period-size = 128
+        api.alsa.headroom = 256
+        api.alsa.disable-batch = true
+        api.alsa.bypass-plugins = true
+        session.suspend-timeout-seconds = 0
+        priority.session = 1000
+        priority.driver = 1000
+      }
+    }
+  }
+]
+
+
+
+
+# 8
 
 
 systemctl --user restart pipewire.service pipewire-pulse.service wireplumber.service
@@ -1883,7 +1830,6 @@ dxgi.hardwareCursor = True
 dxgi.deferSurfaceRelease = True
 dxgi.nvapiHack = False
 dxgi.enableHDR = False
-dxgi.maxDeviceMemory = 6144
 
 
 # --- D3D11 (Performance & Precision) ---
@@ -1893,7 +1839,6 @@ d3d11.allowMapFlagNoWait = True
 d3d11.strictDivision = False
 d3d11.samplerAnisotropy = 8
 d3d11.maxTessFactor = 12
-d3d11.maxAvailableMemory = 6144
 d3d11.disableTearing = auto
 d3d11.invariantPosition = True
 
@@ -1907,16 +1852,12 @@ d3d9.supportX4R4G4B4 = True
 d3d9.supportD32 = True
 d3d9.allowDoNotWait = True
 d3d9.longMad = False
-d3d9.customVendorId = 10DE
-d3d9.customDeviceId = 1E84
-d3d9.maxAvailableMemory = 3072
 
 
 # --- Shader Cache (No Stutters) ---
 dxvk.shaderCache = True
-dxvk.shaderCachePath = /home/vladislav_khudash/.dxvk-cache
-# Ускоряем компиляцию шейдеров в фоне
-dxvk.numCompilerThreads = 6
+dxvk.shaderCachePath = /home/{YOUR USER}/.dxvk-cache
+dxvk.numCompilerThreads = 0
 
 
 # --- Stealth (No Logs / No HUD) ---
@@ -1945,57 +1886,56 @@ sudo apt update && sudo apt install vkbasalt
 
 
 # 2
-# /home/{USER}/.config/vkBasalt
+# /home/{USER}/.config/vkBasalt/vkBasalt.conf
 
 
-
-
+# --- General Settings & Effects Pipeline ---
 [general]
-enable = true
-output_resolution = 0 0       
+effects = smaa:lut:vibrance:cas
+output_resolution = 0 0
 
 
-[Clarity]
-enabled = true
-strength = 0.7               
-
-
-[LUT]
-enabled = true
-lut_path = /home/{YOUR USER}/.config/vkBasalt/luts/lut.cube
-intensity = 0.6                 
-
-
-[Vibrance]
-enabled = true
-amount = 0.25                   
-
-
-[SMAA]
-enabled = true
-smaa_type = SMAA_1X
-SMAA_THRESHOLD = 0.05
-SMAA_MAX_SEARCH_STEPS = 32        
-
-
-[CAS]
+# --- Contrast Adaptive Sharpening (AMD CAS - Идеальная чёткость) ---
+[cas]
 enabled = true
 sharpness = 0.4
 
 
-[FXAA]
-enabled = false                
+# --- Color & LUT (3D Lookup Table) ---
+[lut]
+enabled = true
+lut_path = /home/{YOUR USER}/.config/vkBasalt/luts/lut.cube
+intensity = 0.6
 
 
-[Sharpen]
-enabled = false             
+# --- Color Vibrance ---
+[vibrance]
+enabled = true
+amount = 0.25
 
 
-[Tonemap]
-enabled = false                
+# --- Subpixel Morphological Anti-Aliasing (Качественное сглаживание) ---
+[smaa]
+enabled = true
+smaa_type = smaa_1x
+smaa_threshold = 0.05
+smaa_max_search_steps = 32
 
 
-[Denoise]
+# --- Disabled Filters (Unused / Performance Waste) ---
+[clarity]
+enabled = false
+
+[fxaa]
+enabled = false
+
+[sharpen]
+enabled = false
+
+[tonemap]
+enabled = false
+
+[denoise]
 enabled = false
 
 
@@ -2046,40 +1986,35 @@ sudo usbguard generate-policy | sudo tee /etc/usbguard/rules.conf
 # /etc/usbguard/usbguard-daemon.conf
 
 
+# --- Основные правила и пути ---
 RuleFile=/etc/usbguard/rules.conf
 RuleFolder=/etc/usbguard/rules.d/
 
-
+# Стратегия по умолчанию для неизвестных устройств: Намертво Блокировать
 ImplicitPolicyTarget=block
 
-
-PresentDevicePolicy=apply-policy
-
-
+# Безопасный старт: доверяем устройствам, подключенным ДО включения ПК
+PresentDevicePolicy=keep
 PresentControllerPolicy=keep
 
-
+# Жесткий контроль: любое устройство, воткнутое ПОСЛЕ старта ПК, летит под фильтр
 InsertedDevicePolicy=apply-policy
 
-
+# --- Конфиденциальность и права ---
 AuthorizedDefault=none
-
-
 RestoreControllerDeviceState=false
-
-
 HidePII=true
 
-
+# Доступ к управлению USBGuard — строго для root
 IPCAllowedUsers=root
 IPCAllowedGroups=root 
 IPCAccessControlFiles=/etc/usbguard/IPCAccessControl.d/
 
-
+# --- Движок и бэкенд ---
 DeviceRulesWithPort=false
 DeviceManagerBackend=uevent
 
-
+# Stealth-режим: Ноль дискового ввода-вывода на логи аудита
 AuditBackend=FileAudit
 AuditFilePath=/dev/null
 
@@ -2111,19 +2046,21 @@ sudo apt update && sudo apt install clamav clamav-daemon
 # /etc/clamav/clamd.conf
 
 
+# --- Настройки сокета и прав ---
 LocalSocket /var/run/clamav/clamd.ctl
 FixStaleSocket true
 LocalSocketGroup clamav
 LocalSocketMode 660
 User clamav
 
-
-OnAccessIncludePath /home/{YOUR USER}
+# --- Мониторинг в реальном времени (On-Access) ---
+OnAccessIncludePath /home/vladislav_khudash
 OnAccessExcludeUname clamav
-OnAccessPrevention true
+OnAccessPrevention false
 OnAccessMaxFileSize 300M
+OnAccessMaxThreads 4
 
-
+# --- Производительность и ресурсы ---
 MaxThreads 4
 MaxConnectionQueueLength 15
 ReadTimeout 180
@@ -2131,7 +2068,7 @@ SelfCheck 3600
 ExitOnOOM false
 ForceToDisk false
 
-
+# --- What to scan ---
 ScanELF true
 ScanPE true
 ScanPDF true
@@ -2141,14 +2078,14 @@ ScanSWF true
 DetectPUA true
 AlgorithmicDetection true
 
-
+# --- Лимиты безопасности движка ---
 MaxScanSize 500M
 MaxFileSize 100M
 StreamMaxLength 30M
 MaxRecursion 10
 MaxFiles 5000
 
-
+# --- Полный Stealth: Ноль дисковых логов ---
 LogSyslog false
 LogVerbose false
 LogRotate false
@@ -2156,7 +2093,7 @@ LogTime false
 LogClean false
 Debug false
 
-
+# --- Базы данных ---
 DatabaseDirectory /var/lib/clamav
 OfficialDatabaseOnly true
 Bytecode true
@@ -2172,13 +2109,13 @@ BytecodeSecurity TrustSigned
 DatabaseOwner clamav
 DatabaseDirectory /var/lib/clamav
 
-
+# --- Полный Stealth: Ноль дисковых логов ---
 LogVerbose false
 LogSyslog false
 LogTime false
 LogFileMaxSize 0
 
-
+# --- Настройки обновлений ---
 Checks 6
 DatabaseMirror database.clamav.net
 MaxAttempts 5
@@ -2186,11 +2123,11 @@ ScriptedUpdates yes
 CompressLocalDatabase yes
 Bytecode true
 
-
+# --- Сетевые таймауты ---
 ConnectTimeout 30
 ReceiveTimeout 60
 
-
+# --- Сигнал демону (указываем правильный конфиг) ---
 NotifyClamd /etc/clamav/clamd.conf
 Foreground false
 Debug false
@@ -2209,19 +2146,21 @@ Debug false
 
 [Journal]
 Storage=volatile
-SystemMaxUse=32M
-RuntimeMaxUse=16M
+
+RuntimeMaxUse=64M
 MaxRetentionSec=2h
+
 Compress=no
+
 ForwardToSyslog=no
 ForwardToConsole=no
 ForwardToKMsg=no
 ForwardToWall=no
+
 SyncIntervalSec=0
 RateLimitIntervalSec=0
 RateLimitBurst=0
 Seal=no
-SystemKeepFree=8M
 
 
 
@@ -2250,40 +2189,32 @@ sudo apt update && sudo apt install gamemode
 
 
 [general]
-# Frequency of checking for terminated processes
-reaper_freq             = 5
-
-# Governors (matching your TLP and thermald configs)
-desiredgov              = performance
-defaultgov              = powersave
-
-# Soft real-time scheduling for game threads
-softrealtime            = on
-
-# Priority level: -10 ensures the game gets CPU time over background tasks
-renice                  = -10
-inhibit_screensaver     = 1
-
-# Reduces micro-stutters caused by memory locking (crucial for modern kernels)
-disable_splitlock       = 1
-
+reaper_freq = 5
+desiredgov = performance
+defaultgov = powersave
+softrealtime = on
+renice = -10
+inhibit_screensaver = 1
 
 [cpu]
-# Do not let cores sleep during gaming to avoid wake-up latency
-park_cores              = no
-# Pin games to physical cores to maximize L3 cache hits
-pin_cores               = yes
-
+# Отключаем парковку для мгновенного отклика
+park_cores = no
+# Отключаем pin_cores, чтобы планировщик ядра сам распределял потоки по P и E ядрам
+pin_cores = no
 
 [gpu]
-# Required to unlock NVIDIA performance modes
+# Разрешаем управление питанием через NVML
 apply_gpu_optimisations = accept-responsibility
-# 1 = Prefer Maximum Performance (disables aggressive downclocking)
-nv_powermizer_mode      = 1
+# Убираем жесткий powermizer, оставляем GPU на откуп драйверу в режиме Perf
+nv_powermizer_mode = 0
+
+[sch]
+# Включаем принудительное переключение планировщика для игровых потоков
+timeout = 5
 
 [logging]
-verbose                 = false
-logfile                 = /dev/null
+verbose = false
+logfile = /dev/null
 ```
 
 
