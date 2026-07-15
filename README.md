@@ -259,6 +259,8 @@ sudo apt install safeeyes
     "workbench.list.smoothScrolling"               : true,
     "window.commandCenter"                         : false,
     "window.menuBarVisibility"                     : "compact",
+    "workbench.activityBar.compact"                : true,
+    "window.customTitleBarVisibility"              : "windowed",
     "window.title"                                 : "${folderName} / ${dirty}${activeEditorShort}",
     "chat.commandCenter.enabled"                   : false,
     "chat.titleBar.signIn.enabled"                 : false,
@@ -305,6 +307,7 @@ sudo apt install safeeyes
     "terminal.integrated.cursorStyle"              : "line",
     "terminal.integrated.smoothScrolling"          : true,
     "terminal.integrated.stickyScroll.enabled"     : false,
+    "terminal.integrated.defaultProfile.linux"     : "bash",
 
     // === FILES & EXPLORER (Файлы и дерево) ===
     "files.autoSave"                               : "afterDelay",
@@ -322,7 +325,7 @@ sudo apt install safeeyes
         "editor.semanticHighlighting.enabled"      : true,
         "editor.stickyScroll.defaultModel"         : "foldingProviderModel",
         "editor.suggest.insertMode"                : "replace"
-    }
+    },
 }
 ```
 
