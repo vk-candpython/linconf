@@ -246,9 +246,9 @@ sudo apt install safeeyes
 ```bash
 {
     // === WORKBENCH & UI (Интерфейс) ===
-    "workbench.colorTheme"                         : "Kanagawa",
-    "workbench.preferredDarkColorTheme"            : "Kanagawa",
-    "workbench.preferredHighContrastColorTheme"    : "Kanagawa",
+    "workbench.colorTheme"                         : "Gruvbox Dark Soft",
+    "workbench.preferredDarkColorTheme"            : "Gruvbox Dark Soft",
+    "workbench.preferredHighContrastColorTheme"    : "Gruvbox Dark Soft",
     "workbench.iconTheme"                          : "material-icon-theme",
     "workbench.startupEditor"                      : "none",
     "workbench.editor.empty.hint"                  : "hidden",
