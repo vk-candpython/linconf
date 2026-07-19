@@ -269,7 +269,7 @@ sudo apt install safeeyes
 
     // === EDITOR: TYPOGRAPHY (Шрифты и текст) ===
     "editor.fontFamily"                            : "Fira Code SemiBold, monospace",
-    "editor.fontWeight"                            : "600",
+    "editor.fontWeight"                            : "1000",
     "editor.fontSize"                              : 15,
     "editor.lineHeight"                            : 2,
     "editor.letterSpacing"                         : 1,
