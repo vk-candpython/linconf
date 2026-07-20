@@ -222,7 +222,7 @@ sudo apt install safeeyes
     "pre_break_warning_time": 1,
     "random_order": false,
     "rpc_port": 7200,
-    "short_break_duration": 120,
+    "short_break_duration": 180,
     "short_break_interval": 30,
     "short_breaks": [
         {
