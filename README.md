@@ -104,6 +104,21 @@
 
 
 
+## Chromium Extensions
+
+```bash
+1. Tab Session Manager
+
+2. Dark Reader
+
+3. Tampermonkey
+
+4. Malwarebytes Browser Guard
+
+5. uBlock Origin Lite
+```
+
+
 ## Safe Eyes
 
 ```bash
