@@ -261,9 +261,9 @@ sudo apt install safeeyes
 ```bash
 # VS Code Extensions
 
-1. qufiwefefwoyn.kanagawa
+1. @id:qufiwefefwoyn.kanagawa
 
-2. pkief.material-icon-theme
+2. @id:pkief.material-icon-theme
 
 3. @id:ms-python.python
 
