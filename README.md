@@ -983,11 +983,25 @@ STEAM_DEBUG=0
 <br><br>
 
 
-## I USE GNOME ON WAYLAND AND GDM3 
+## I USE: GNOME ON WAYLAND AND GDM3 
 
 ```bash
+# GNOME Extensions
+
+1. just-perfection-desktop@just-perfection
+
+2. dash-to-panel@jderose9.github.com
+
+3. clipboard-indicator@tudmotu.com
+
+4. Vitals@CoreCoding.com
+
+
+# GNOME Settings
+
+
 # --- 1. Rendering & Efficiency ---
-# Triple buffering for smoothness
+# Triple buffering for smoothness, VRR to save power on static images, and Unredirect for full-screen performance
 gsettings set org.gnome.mutter experimental-features "['triple-buffering']"
 
 
@@ -1033,6 +1047,10 @@ gsettings set org.gnome.desktop.peripherals.mouse speed 0
 # Keyboard: Faster typing response with reduced delay and high repeat rate
 gsettings set org.gnome.desktop.peripherals.keyboard delay 300
 gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 30
+
+# Visuals: Scaling and cursor size for better visibility on high-res displays
+gsettings set org.gnome.desktop.interface text-scaling-factor 1.56
+gsettings set org.gnome.desktop.interface cursor-size 50
 ```
 
 
