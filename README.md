@@ -259,6 +259,19 @@ sudo apt install safeeyes
 ## VS CODE
 
 ```bash
+# VS Code Extensions
+
+1. qufiwefefwoyn.kanagawa
+
+2. pkief.material-icon-theme
+
+3. @id:ms-python.python
+
+4. @id:ms-vscode.cpptools
+
+
+# VS Code Settings
+
 {
     // === WORKBENCH & UI (Интерфейс) ===
     "workbench.colorTheme"                         : "Kanagawa",
