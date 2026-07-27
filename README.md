@@ -764,33 +764,55 @@ blacklist amd76x_edac
 # /etc/modprobe.d/nvidia.conf 
 
 
-# --- Видеопамять и гибернация ---
-# Сохранять видеопамять при переходе в сон (убирает артефакты и падение приложений)
+# ======================================================================
+# Custom NVIDIA Kernel Module Configuration
+# Optimized for Linux Laptops, Low Latency, and Suspend/Resume Stability
+# ======================================================================
+
+
+# --- Видеопамять и управление питанием (Suspend/Resume Fixes) ---
+# Сохранять аллокации видеопамяти при переходе в сон (убирает артефакты и падения приложений)
 options nvidia NVreg_PreserveVideoMemoryAllocations=1
-# ИСПРАВЛЕНО: перенесено в /var/tmp. Папка /tmp полностью очищается при перезагрузке,
-# из-за чего прошлые конфиги ломали режим сна (так как папка /tmp/nvidia исчезала).
+
+# Путь для дампа VRAM. Перенесено в /var/tmp, так как /tmp (tmpfs) очищается при перезагрузке
 options nvidia NVreg_TemporaryFilePath=/var/tmp
 
-# --- Максимум производительности шины CPU-GPU ---
-# Использовать PAT (Page Attribute Table) — дает бритвенную четкость и скорость передачи текстур
+
+# --- Оптимизация шины и производительности CPU-GPU ---
+# Использовать таблицу атрибутов страниц (PAT) — повышает эффективность передачи текстур
 options nvidia NVreg_UsePageAttributeTable=1
-# Включить Message Signaled Interrupts — критически снижает инпут-лаг и задержки по HDMI
+
+# Message Signaled Interrupts (MSI) — критически снижает инпут-лаг и задержки вывода (в т.ч. по HDMI)
 options nvidia NVreg_EnableMSI=1
-# Асинхронные операции с памятью для параллельной обработки кадров
+
+# Асинхронные потоковые операции с памятью для параллельной обработки кадров
 options nvidia NVreg_EnableStreamMemOPs=1
-# Отключить нефизическую для ноута шину NvLink (высвобождает ресурсы CPU)
+
+# Отключить шину NvLink (для ноутбуков физически избыточна, высвобождает ресурсы CPU)
 options nvidia NVreg_NvLinkDisable=1
-# Включение сопроцессора GSP (убирает микрофризы интерфейса, разгружает CPU)
+
+# Отключить динамический расчёт пропускной способности NvLink
+options nvidia NVreg_RmNvlinkBandwidth=0
+
+# Включить сопроцессор GSP (GPU System Processor) — переносит задачи управления с CPU на GPU, улучшает работу в Wayland
 options nvidia NVreg_EnableGpuFirmware=1
 
-# --- Настройка HDMI, герцовки и питания ---
-# PowerMizerEnable=0x1       - контроль частот активен
-# GpuPowerMizerMode=0x3      - Адаптивный режим (холодный в браузере, мощный в задачах)
-# EnableBrightnessControl=1  - контроль яркости экрана ноутбука
-# RMEdgeIntrCheck=0          - отключение проверки прерываний панели (убирает статтеринг на внешнем мониторе)
-options nvidia NVreg_RegistryDwords="PowerMizerEnable=0x1;GpuPowerMizerMode=0x3;EnableBrightnessControl=1;RMEdgeIntrCheck=0"
+# Принудительная инициализация графического конвейера ядра (минимизирует фризы интерфейса в Wayland/X11)
+options nvidia NVreg_EnableGFXPipeline=1
 
-# --- Права доступа к устройствам (стандарт Ubuntu/Debian) ---
+
+# --- Тюнинг реестра драйвера (HDMI, дисплей и PowerMizer) ---
+# PowerMizerEnable=0x1       - контроль частот активен
+# GpuPowerMizerMode=0x3      - адаптивный режим (холодный в простое, максимальная мощность в задачах)
+# EnableBrightnessControl=1  - аппаратный контроль яркости встроенного экрана ноутбука
+# RMEdgeIntrCheck=0          - отключить периодическую проверку прерываний панели (убирает микрофризы на внешнем мониторе)
+# TempThreshold=80000        - максимальный температурный лимит GPU (80°C)
+options nvidia NVreg_RegistryDwords="PowerMizerEnable=0x1;GpuPowerMizerMode=0x3;EnableBrightnessControl=1;RMEdgeIntrCheck=0;TempThreshold=80000"
+
+
+# --- Управление файлами устройств в /dev (Стандарт для Arch/Ubuntu/Debian) ---
+# Разрешить ядру создавать ноды устройств при загрузке для корректного применения прав доступа
+options nvidia NVreg_ModifyDeviceFiles=1
 options nvidia NVreg_DeviceFileUID=0
 options nvidia NVreg_DeviceFileGID=44
 options nvidia NVreg_DeviceFileMode=0660
