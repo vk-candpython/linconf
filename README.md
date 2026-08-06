@@ -265,9 +265,11 @@ sudo apt install safeeyes
 
 2. @id:pkief.material-icon-theme
 
-3. @id:ms-python.python
+3. @id:ms-vscode.cpptools
 
-4. @id:ms-vscode.cpptools
+4. @id:ms-python.python
+
+5. @id:ms-python.vscode-pylance
 
 
 # VS Code Settings
