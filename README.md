@@ -28,7 +28,7 @@
 - **ZRAM** — zstd compression, 50% RAM size
 - **tmpfs** — /tmp (4G), /var/log (256M), /var/tmp (2G)
 - **fstrim** — daily SSD trim (idle priority)
-- **noatime/nodiratime** — reduce disk writes
+- **noatime** — reduce disk writes
 
 ### 🔊 Audio 
 - **Quantum 512/48000** — low latency
@@ -56,8 +56,6 @@
 - **WiFi powersave 1** — balance performance/battery
 
 ### 🖥️ Desktop (GNOME/Wayland)
-- **Triple buffering + VRR** — smooth rendering
-- **Animations off** — reduce latency
 - **Hot corners off** — disable CPU wakeups
 - **Flat acceleration** — raw mouse input
 
