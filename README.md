@@ -543,21 +543,21 @@ sudo sysctl --system
 
 
 # EFI System Partition
-/dev/disk/by-uuid/{YOUR UUID}              /boot/efi        vfat    defaults,umask=0077                                          0       1
+/dev/disk/by-uuid/{YOUR UUID}              /boot/efi        vfat    defaults,umask=0077                                           0       1
 
 
 # Root Partition (SSD Optimized)
-UUID={YOUR UUID}                           /                ext4    defaults,noatime,journal_ioprio=0,commit=60,errors=remount-ro      0       1
+UUID={YOUR UUID}                           /                ext4    defaults,noatime,journal_ioprio=0,commit=60,errors=remount-ro 0       1
 
 
 # Swap File (Low priority to keep it as a last resort)
-/swapfile                                  none             swap    sw,pri=1                                                     0       0
+/swapfile                                  none             swap    sw,pri=1                                                      0       0
 
 
 # Memory Resident File Systems (Fast & Stealthy)
-tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=4G,nosuid,nodev             0       0
-tmpfs                                      /var/log         tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev            0       0
-tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=2G,nosuid,nodev              0       0
+tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=4G,nosuid,nodev               0       0
+tmpfs                                      /var/log         tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev             0       0
+tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=2G,nosuid,nodev               0       0
 ```
 
 
