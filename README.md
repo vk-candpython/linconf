@@ -454,8 +454,8 @@ kernel.sched_wakeup_granularity_ns = 6000000
 kernel.sched_migration_cost_ns     = 5000000
 kernel.sched_child_runs_first      = 0
 kernel.sched_autogroup_enabled     = 0
-kernel.sched_rt_runtime_us         = -1
-kernel.sched_pelt_multiplier       = 1
+kernel.sched_rt_runtime_us         = 900000
+kernel.sched_pelt_multiplier       = 2
 kernel.sched_rt_period_us          = 1000000
 kernel.sched_cfs_bandwidth_slice_us= 3000
 kernel.sched_util_clamp_min        = 100
@@ -490,6 +490,7 @@ vm.vfs_cache_pressure              = 30
 vm.laptop_mode                     = 5
 vm.dirty_ratio                     = 10
 vm.dirty_background_ratio          = 5
+vm.watermark_boost_factor          = 0
 vm.dirty_expire_centisecs          = 1000
 vm.dirty_writeback_centisecs       = 1000
 
@@ -509,8 +510,6 @@ net.ipv4.tcp_congestion_control    = bbr
 net.core.netdev_max_backlog        = 10000
 net.core.rmem_max                  = 16777216
 net.core.wmem_max                  = 16777216
-net.core.busy_poll                 = 50
-net.core.busy_read                 = 50
 net.ipv4.tcp_fastopen              = 3
 net.ipv4.tcp_fin_timeout           = 15
 net.ipv4.tcp_tw_reuse              = 1
@@ -558,7 +557,7 @@ UUID={YOUR UUID}                           /                ext4    defaults,noa
 # Memory Resident File Systems (Fast & Stealthy)
 tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=10G,nosuid,nodev             0       0
 tmpfs                                      /var/log         tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev            0       0
-tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=1G,nosuid,nodev              0       0
+tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=4G,nosuid,nodev              0       0
 ```
 
 
@@ -630,7 +629,7 @@ GRUB_TERMINAL=console
 GRUB_COLOR_NORMAL="white/black"
 GRUB_COLOR_HIGHLIGHT="black/white"
 GRUB_CMDLINE_LINUX=""
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=on threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active intel_pstate.hwp_only=1 nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=3000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nvme.use_threaded_interrupts=1 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=efi fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=auto threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=10000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
 
 
 
@@ -692,9 +691,6 @@ blacklist uvcvideo
 blacklist snd_pcsp
 options pcspkr off
 # Disable ancient/obsolete sound architectures and cards
-blacklist sound
-blacklist soundcard
-blacklist sequencer
 blacklist snd_intel8x0m
 blacklist ac97
 blacklist ac97_codec
