@@ -624,8 +624,6 @@ GRUB_DEFAULT=0
 GRUB_TIMEOUT=3
 GRUB_DISTRIBUTOR="Ubuntu realtime-lowlatency"
 GRUB_TERMINAL=console 
-GRUB_COLOR_NORMAL="white/black"
-GRUB_COLOR_HIGHLIGHT="black/white"
 GRUB_CMDLINE_LINUX=""
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=efi fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=on threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=10000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
 
@@ -888,112 +886,64 @@ EndSection
 # --- System Paths ---
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 
-# --- OpenMP & Parallelism (Intel Thread Director Adaptive Optimization) ---
+# --- OpenMP ---
 OMP_STACKSIZE=8M
 OMP_DYNAMIC=true
 OMP_WAIT_POLICY=passive
 OMP_NESTED=false
 
-# --- Memory & Network (Extreme Performance) ---
+# --- glibc / Resolver ---
 GLIBC_TUNABLES="glibc.malloc.trim_threshold=262144:glibc.malloc.mmap_threshold=262144:glibc.malloc.mmap_max=32768:glibc.malloc.arena_max=4"
-IONICE_CLASS=best-effort
-IONICE_LEVEL=2
-VM_OVERCOMMIT_MEMORY=1
 RES_OPTIONS="timeout:1 attempts:3 rotate ndots:1"
-NETWORK_BUFFER_SIZE=32768
-TCP_QUICKACK=1
 PYTHONOPTIMIZE=1
 
-# --- Java & Tools ---
+# --- Java ---
 _JAVA_OPTIONS="-XX:+UseG1GC -XX:MaxGCPauseMillis=100"
 JAVA_TOOL_OPTIONS="-Xms512m -Xmx2g"
 
-# --- NVIDIA (Ultra Low Latency & Stealth) ---
+# --- NVIDIA ---
 __GLX_VENDOR_LIBRARY_NAME=nvidia
-__GL_PRIORITY=HIGH
-__GL_GPU_MEMORY_ALLOCATION=100
-__GL_ASYNC_FLIP=1
-__GL_ALLOW_UNOFFICIAL_PROTOCOL=0
-__GL_MaxFramesAllowed=1
-__GL_SYNC_TO_VBLANK=0
-__GL_VR_ALLOWED=1
-__GLX_DRISW=0
-__GL_GSYNC_ALLOWED=1
-__GL_YIELD=USLEEP
-__GL_OPTIMIZE_FOR_LATENCY=1
-__GL_LOG_VERBOSE=0
-__GL_DEBUG_LEVEL=0
 __GL_SHADER_DISK_CACHE=1
-__GL_SHADER_DISK_CACHE_PATH="/home/{YOUR USER}/.nvidia-shader-cache"
+__GL_SHADER_DISK_CACHE_PATH="/home/vladislav_khudash/.nvidia-shader-cache"
 __GL_SHADER_DISK_CACHE_COMPRESS=1
+__GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1
+__GL_YIELD=USLEEP
 
-# --- Mesa & Vulkan (Zero Overhead) ---
+# --- Mesa / Vulkan ---
 MESA_DEBUG=0
 MESA_NO_ERROR=1
 MESA_GLSL_CACHE_DISABLE=0
-MESA_GLTHREAD=1
-MESA_SHADER_CACHE_DIR="/home/{YOUR USER}/.mesa_shader_cache"
-VK_DRIVER_FRAMETIME_ENABLE=0
-vulkan_enable_validation=0
-VK_SHADER_CACHE_DISABLE=0
-VK_EXT_swapchain_maintenance1=1
-VK_PRESENT_MODE=mailbox
+MESA_SHADER_CACHE_DIR="/home/vladislav_khudash/.mesa_shader_cache"
+MESA_VK_WSI_PRESENT_MODE=mailbox
+VK_LOADER_LAYERS_DISABLE=~implicit~,~explicit~
 
-# --- Wayland & Compositor ---
+# --- Wayland ---
 GBM_BACKEND=nvidia-drm
-WLR_NO_HARDWARE_CURSOR=1
-WLR_RENDER_MODE=mailbox
 EGL_PLATFORM=wayland
 
-# --- DXVK & Video (Silent & Fast) ---
+# --- DXVK / Video / CUDA ---
 DXVK_LOG_LEVEL=none
 DXVK_STATE_CACHE=1
-DXVK_SHADER_DISK_CACHE_PATH="/home/{YOUR USER}/.dxvk-cache"
-VDPAU_LOG_LEVEL=0
+DXVK_SHADER_DISK_CACHE_PATH="/home/vladislav_khudash/.dxvk-cache"
+VDPAU_TRACE=0
 LIBVA_MESSAGING_LEVEL=0
-CUDA_CACHE_PATH="/home/{YOUR USER}/.cuda-cache"
+CUDA_CACHE_PATH="/home/vladislav_khudash/.cuda-cache"
 CUDA_LAUNCH_BLOCKING=0
 
-# --- Intel (Efficiency & Hardware Scalability) ---
+# --- Intel ---
 INTEL_DEBUG=null
-INTEL_PERFORMANCE_MODE=1
 INTEL_LOW_POWER_ENCODE=1
-INTEL_ENABLE_GFX_CLKGATING=1
-INTEL_ENABLE_NEW_SCHED=1
-INTEL_ENABLE_SSBO=1
-INTEL_COMPUTE_SHADER=1
-INTEL_HW_BLIT=1
-INTEL_COMPRESSION_RENDER_TARGET=1
-INTEL_FAST_CLEAR=1
 
-# --- Chromium (Wayland Native + HW Overlays + No Logs) ---
-CHROMIUM_FLAGS="--ozone-platform-hint=wayland --enable-gpu-rasterization --enable-zero-copy --enable-native-gpu-memory-buffers --enable-hardware-overlays --enable-features=Vulkan,VulkanFromANGLE,DefaultAngleVulkan,RunVideoAcceleratorOnGpuProcess --ignore-gpu-blocklist --log-level=3 --no-report-upload --disable-logging --disable-breakpad"
-
-# --- GTK, GDK & UI (Minimal Overhead) ---
-GTK_ENABLE_ANIMATIONS=0
+# --- GTK / Qt / SDL ---
 GDK_BACKEND=wayland
-GDK_USE_COMPOSITING=0
-GDK_DEBUG=none
 NO_AT_BRIDGE=1
-
-# --- SDL & QT ---
 SDL_VIDEODRIVER=wayland,x11
 QT_QPA_PLATFORM=wayland
 QT_LOGGING_RULES="*.debug=false;*.info=false;*.warning=false"
-QT_QUICK_NO_ANIMATION=1
-QT_OPENGL_NO_ERROR_CHECK=1
 
-# --- Audio & Pipewire (Low Latency Stable) ---
-PIPEWIRE_DEBUG=0
-PIPEWIRE_ENABLE_3D=1
-PIPEWIRE_DISABLE_LATENCY_SMOOTHING=0
-PIPEWIRE_CPU_PRIORITY=high
-
-# --- Wine & Steam (Pure Silent) ---
+# --- Wine / Proton ---
 WINEDEBUG=-all
 PROTON_LOG=0
-STEAM_VERBOSE=0
-STEAM_DEBUG=0
 ```
 
 
@@ -2191,10 +2141,9 @@ flatpak install -y flathub com.github.tchx84.Flatseal
 # --- PERFORMANCE & KERNEL TOOLS ---
 
 
-# Low-latency kernels, thermal management, and power optimization
+# Thermal management, and power optimization
 sudo apt install -y \
-    fwupd linux-lowlatency linux-headers-lowlatency \
-    rtirq-init tuned tuned-utils thermald auto-cpufreq \
+    fwupd rtirq-init thermald \
     zram-tools tlp tlp-rdw
 
 
