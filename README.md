@@ -111,11 +111,13 @@
 
 2. Dark Reader
 
-3. Tampermonkey
+3. Unhook - Remove YouTube Recommended & Shorts
 
-4. Malwarebytes Browser Guard
+4. Tampermonkey
 
-5. uBlock Origin Lite
+5. Malwarebytes Browser Guard
+
+6. uBlock Origin Lite
 ```
 
 
@@ -1024,12 +1026,7 @@ STEAM_DEBUG=0
 # GNOME Settings
 
 
-# --- 1. Rendering & Efficiency ---
-# Triple buffering for smoothness, VRR to save power on static images, and Unredirect for full-screen performance
-gsettings set org.gnome.mutter experimental-features "['triple-buffering']"
-
-
-# --- 2. Power Management (Battery Life Optimization) ---
+# --- 1. Power Management (Battery Life Optimization) ---
 # Automatically trigger power-saver profile when battery is low
 gsettings set org.gnome.settings-daemon.plugins.power power-saver-profile-on-low-battery true
 
@@ -1041,9 +1038,9 @@ gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-typ
 gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
 
 
-# --- 3. Interface & UI (Reducing Resource Usage) ---
-# Disable animations to save CPU/GPU cycles (crucial for battery and responsiveness)
-gsettings set org.gnome.desktop.interface enable-animations false
+# --- 2. Interface & UI (Reducing Resource Usage) ---
+# Enable animations for smoother UX; GPU-accelerated, minimal battery impact on Wayland
+gsettings set org.gnome.desktop.interface enable-animations true
 
 # Disable window snapping, dynamic workspaces, and hot corners to keep the environment lean
 gsettings set org.gnome.mutter edge-tiling false
@@ -1051,7 +1048,7 @@ gsettings set org.gnome.mutter dynamic-workspaces false
 gsettings set org.gnome.desktop.interface enable-hot-corners false
 
 
-# --- 4. Background Processes (Reducing CPU Wakeups) ---
+# --- 3. Background Processes (Reducing CPU Wakeups) ---
 # Disable external search providers and indexing (major battery drainers)
 gsettings set org.gnome.desktop.search-providers disable-external true
 gsettings set org.gnome.desktop.search-providers disabled "['org.gnome.Contacts.desktop', 'org.gnome.Documents.desktop', 'org.gnome.Nautilus.desktop']"
@@ -1063,7 +1060,13 @@ gsettings set org.gnome.software download-updates false
 gsettings set org.gnome.desktop.privacy report-technical-problems false
 
 
-# --- 5. Peripherals & Accessibility ---
+# --- 4. Peripherals & Accessibility ---
+# Night Light: Set always on
+gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-automatic false
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 00.00
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 00.00
+
 # Mouse: Flat acceleration profile for raw, predictable input
 gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
 gsettings set org.gnome.desktop.peripherals.mouse speed 0
@@ -1073,8 +1076,11 @@ gsettings set org.gnome.desktop.peripherals.keyboard delay 300
 gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 30
 
 # Visuals: Scaling and cursor size for better visibility on high-res displays
-gsettings set org.gnome.desktop.interface text-scaling-factor 1.56
+gsettings set org.gnome.desktop.interface text-scaling-factor 1.50
 gsettings set org.gnome.desktop.interface cursor-size 50
+
+# Visuals: Night Light temperature (K)
+gsettings set org.gnome.settings-daemon.plugins.color night-light-temperature 2000
 ```
 
 
@@ -1451,12 +1457,12 @@ context.properties = {
     core.name                   = pipewire-0
     default.clock.rate          = 48000
     default.clock.allowed-rates = [ 44100 48000 88200 96000 192000 ]
-    default.clock.quantum       = 256
-    default.clock.min-quantum   = 128
-    default.clock.max-quantum   = 1024
+    default.clock.quantum       = 1024
+    default.clock.min-quantum   = 512
+    default.clock.max-quantum   = 4096
     default.clock.quantum-limit = 8192
-    clock.power-of-two-quantum  = true
-    link.max-buffers            = 16
+    clock.power-of-two-quantum  = false
+    link.max-buffers            = 64
     mem.allow-mlock             = true
     module.x11.bell             = false
     module.access               = true
@@ -1474,10 +1480,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 70 }
-      flags = [ ifexists nofail ]
-    }
-    { name  = libpipewire-module-rtkit
+      args  = { nice.level = -10 rt.prio = 80 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-protocol-native }
@@ -1496,79 +1499,31 @@ context.modules = [
     { name  = libpipewire-module-jackdbus-detect flags = [ ifexists nofail ] condition = [ { module.jackdbus-detect = true } ] }
 ]
 
-context.objects = [
-    { factory = spa-node-factory
-      args = {
-          factory.name                    = api.alsa.pcm.sink
-          node.name                       = HighQuality-Sink
-          node.description                = "ALSA Output (Low-Latency)"
-          audio.format                    = "S32LE"
-          audio.rate                      = 48000
-          audio.channels                  = 2
-          resample.quality                = 15
-          channelmix.normalize            = false
-          channelmix.upmix                = false
-          channelmix.upmix-method         = psd
-          node.latency                    = 256/48000
-          node.pause-on-idle              = false
-          api.alsa.headroom               = 256
-          api.alsa.period-size            = 128
-          api.alsa.disable-batch          = true
-          api.alsa.bypass-plugins         = true
-          priority.session                = 1000
-          priority.driver                 = 1000
-          session.suspend-timeout-seconds = 0
-      }
-    }
-    { factory = spa-node-factory
-      args = {
-          factory.name                    = api.alsa.pcm.source
-          node.name                       = HighQuality-Source
-          node.description                = "ALSA Input (Low-Latency)"
-          audio.format                    = "S32LE"
-          audio.rate                      = 48000
-          audio.channels                  = 2
-          resample.quality                = 15
-          node.latency                    = 256/48000
-          node.pause-on-idle              = false
-          api.alsa.headroom               = 256
-          api.alsa.period-size            = 128
-          api.alsa.disable-batch          = true
-          api.alsa.bypass-plugins         = true
-          priority.session                = 1000
-          priority.driver                 = 1000
-          session.suspend-timeout-seconds = 0
-      }
-    }
-]
+context.objects = [ ]
 
 alsa.properties = {
     alsa.access        = [ MMAP_INTERLEAVED MMAP_NONINTERLEAVED ]
     alsa.format        = [ "S32LE" "F32LE" ]
-    alsa.rate          = { min=48000 max=48000 }
+    alsa.rate          = { min=48000 max=192000 }
     alsa.channels      = { min=2 max=2 }
-    alsa.period-bytes  = { min=1024 max=65536 }
-    alsa.buffer-bytes  = { min=4096 max=131072 }
+    alsa.period-bytes  = { min=4096 max=262144 }
+    alsa.buffer-bytes  = { min=16384 max=1048576 }
     alsa.volume-method = "physical"
 }
 
 stream.properties = {
-    node.latency     = 256/48000
+    node.latency     = 1024/48000
     resample.quality = 15
     dither.method    = "shibata"
 }
 
 pulse.properties = {
     server.address = ["unix:native"]
-    vm.overrides   = { pulse.min.quantum = 128/48000 }
+    vm.overrides   = { pulse.min.quantum = 512/48000 }
 }
 
 pulse.cmd = [
     { cmd = "load-module" args = "module-always-sink" flags = [] }
-]
-
-pulse.rules = [
-    { matches = [] actions = {} }
 ]
 
 
@@ -1581,12 +1536,12 @@ pulse.rules = [
 context.properties = {
     log.level                   = 0
     default.clock.rate          = 48000
-    default.clock.quantum       = 256
-    default.clock.min-quantum   = 128
-    default.clock.max-quantum   = 1024
+    default.clock.quantum       = 1024
+    default.clock.min-quantum   = 512
+    default.clock.max-quantum   = 4096
     default.clock.quantum-limit = 8192
-    clock.power-of-two-quantum  = true
-    link.max-buffers            = 16
+    clock.power-of-two-quantum  = false
+    link.max-buffers            = 64
     mem.allow-mlock             = true
 }
 
@@ -1597,10 +1552,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 70 }
-      flags = [ ifexists nofail ]
-    }
-    { name  = libpipewire-module-rtkit
+      args  = { nice.level = -10 rt.prio = 80 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-protocol-native }
@@ -1617,7 +1569,7 @@ pulse.cmd = [
 ]
 
 stream.properties = {
-    node.latency            = 256/48000
+    node.latency            = 1024/48000
     resample.quality        = 15
     channelmix.normalize    = false
     channelmix.upmix        = false
@@ -1629,12 +1581,8 @@ stream.properties = {
 pulse.properties = {
     server.address       = ["unix:native"]
     pulse.default.format = "S32LE"
-    vm.overrides         = { pulse.min.quantum = 128/48000 }
+    vm.overrides         = { pulse.min.quantum = 512/48000 }
 }
-
-pulse.rules = [
-    { matches = [] actions = {} }
-]
 
 
 
@@ -1665,7 +1613,7 @@ context.modules = [
 stream.properties = {
     audio.format            = "S32LE"
     audio.rate              = 48000
-    node.latency            = 256/48000
+    node.latency            = 1024/48000
     resample.quality        = 15
     dither.method           = "shibata"
     channelmix.normalize    = false
@@ -1678,82 +1626,18 @@ stream.properties = {
 
 
 # 5
-# /home/{YOUR USER}/.config/pipewire/client-rt.conf
-
-
-context.properties = {
-    log.level                   = 0
-    default.clock.rate          = 48000
-    default.clock.allowed-rates = [ 44100 48000 88200 96000 192000 ]
-    default.clock.quantum       = 256
-    default.clock.min-quantum   = 128
-    default.clock.max-quantum   = 1024
-    default.clock.quantum-limit = 8192
-    clock.power-of-two-quantum  = true
-    link.max-buffers            = 16
-    mem.allow-mlock             = true
-}
-
-context.spa-libs = {
-    audio.convert.* = audioconvert/libspa-audioconvert
-    api.alsa.*      = alsa/libspa-alsa
-    support.*       = support/libspa-support
-}
-
-context.modules = [
-    { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 70 }
-      flags = [ ifexists nofail ]
-    }
-    { name  = libpipewire-module-rtkit
-      flags = [ ifexists nofail ]
-    }
-    { name  = libpipewire-module-protocol-native }
-    { name  = libpipewire-module-client-node }
-    { name  = libpipewire-module-client-device }
-    { name  = libpipewire-module-adapter }
-    { name  = libpipewire-module-metadata }
-    { name  = libpipewire-module-session-manager }
-]
-
-stream.properties = {
-    node.latency            = 256/48000
-    resample.quality        = 15
-    dither.method           = "shibata"
-    channelmix.normalize    = false
-    channelmix.mix-lfe      = true
-    channelmix.upmix        = false
-    channelmix.upmix-method = psd
-    audio.format            = "S32LE"
-    audio.rate              = 48000
-}
-
-alsa.properties = {
-    alsa.access        = [ MMAP_INTERLEAVED MMAP_NONINTERLEAVED ]
-    alsa.format        = [ "S32LE" "F32LE" ]
-    alsa.rate          = { min=48000 max=48000 }
-    alsa.channels      = { min=2 max=2 }
-    alsa.period-bytes  = { min=1024 max=65536 }
-    alsa.buffer-bytes  = { min=4096 max=131072 }
-    alsa.volume-method = "physical"
-}
-
-
-
-
-# 6
 # /home/{YOUR USER}/.config/pipewire/jack.conf
 
 
 context.properties = {
     log.level                   = 0
     default.clock.rate          = 48000
-    default.clock.quantum       = 256
-    default.clock.min-quantum   = 128
-    default.clock.max-quantum   = 1024
+    default.clock.quantum       = 1024
+    default.clock.min-quantum   = 512
+    default.clock.max-quantum   = 4096
     default.clock.quantum-limit = 8192
-    clock.power-of-two-quantum  = true
-    link.max-buffers            = 16
+    clock.power-of-two-quantum  = false
+    link.max-buffers            = 64
     mem.allow-mlock             = true
 }
 
@@ -1764,10 +1648,7 @@ context.spa-libs = {
 
 context.modules = [
     { name  = libpipewire-module-rt
-      args  = { nice.level = -7 rt.prio = 70 }
-      flags = [ ifexists nofail ]
-    }
-    { name  = libpipewire-module-rtkit
+      args  = { nice.level = -10 rt.prio = 80 }
       flags = [ ifexists nofail ]
     }
     { name  = libpipewire-module-protocol-native }
@@ -1778,7 +1659,7 @@ context.modules = [
 stream.properties = {
     audio.format            = "S32LE"
     audio.rate              = 48000
-    node.latency            = 256/48000
+    node.latency            = 1024/48000
     resample.quality        = 15
     dither.method           = "shibata"
     channelmix.normalize    = false
@@ -1788,9 +1669,9 @@ stream.properties = {
 }
 
 jack.properties = {
-    node.latency           = 256/48000
+    node.latency           = 1024/48000
     node.rate              = 48000
-    node.quantum           = 256
+    node.quantum           = 1024
     node.lock-quantum      = true
     jack.self-connect-mode = allow
     jack.merge-monitor     = false
@@ -1801,7 +1682,7 @@ jack.properties = {
 
 
 
-# 7
+# 6
 # /home/{YOUR USER}/.config/wireplumber/wireplumber.conf.d/50-alsa-lowlatency.conf
 
 
@@ -1822,11 +1703,10 @@ monitor.alsa.rules = [
         channelmix.normalize = false
         channelmix.upmix = false
         channelmix.mix-lfe = false
-        api.alsa.period-size = 128
-        api.alsa.headroom = 256
+        api.alsa.period-size = 512
+        api.alsa.headroom = 1024
         api.alsa.disable-batch = true
-        api.alsa.bypass-plugins = true
-        session.suspend-timeout-seconds = 0
+        session.suspend-timeout-seconds = 10
         priority.session = 1000
         priority.driver = 1000
       }
@@ -1837,7 +1717,7 @@ monitor.alsa.rules = [
 
 
 
-# 8
+# 7
 
 
 systemctl --user restart pipewire.service pipewire-pulse.service wireplumber.service
