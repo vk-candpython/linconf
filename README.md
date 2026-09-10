@@ -2102,8 +2102,8 @@ ForwardToKMsg=no
 ForwardToWall=no
 
 SyncIntervalSec=0
-RateLimitIntervalSec=0
-RateLimitBurst=0
+RateLimitIntervalSec=30s
+RateLimitBurst=10000
 Seal=no
 
 
