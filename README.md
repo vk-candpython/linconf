@@ -26,14 +26,14 @@
 
 ### 🧠 Memory & Storage
 - **ZRAM** — zstd compression, 50% RAM size
-- **tmpfs** — /tmp (10G), /var/log (256M), /var/tmp (1G)
+- **tmpfs** — /tmp (4G), /var/log (256M), /var/tmp (2G)
 - **fstrim** — daily SSD trim (idle priority)
 - **noatime/nodiratime** — reduce disk writes
 
 ### 🔊 Audio 
 - **Quantum 512/48000** — low latency
 - **S32LE format** — high precision
-- **Real-time priority** — rt.prio=50, nice=-2
+- **Real-time priority** — rt.prio=80, nice=-10
 - **PulseAudio fallback** — speex-float-10
 
 ### 🔋 Power Management
@@ -53,7 +53,7 @@
 - **BBR** — TCP congestion control
 - **fq_codel** — queue discipline
 - **Randomized MAC** — privacy
-- **WiFi powersave 3** — balance performance/battery
+- **WiFi powersave 1** — balance performance/battery
 
 ### 🖥️ Desktop (GNOME/Wayland)
 - **Triple buffering + VRR** — smooth rendering
@@ -1303,8 +1303,8 @@ RESTORE_THRESHOLDS_ON_AC            = 1
 
 # --- Platform & Sound ---
 SOUND_POWER_SAVE_ON_AC              = 0
-SOUND_POWER_SAVE_ON_BAT             = 1
-SOUND_POWER_SAVE_TIMEOUT            = 60
+SOUND_POWER_SAVE_ON_BAT             = 0
+SOUND_POWER_SAVE_TIMEOUT            = 0
 
 PLATFORM_PROFILE_ON_AC              = performance
 PLATFORM_PROFILE_ON_BAT             = balanced
