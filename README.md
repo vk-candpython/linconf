@@ -543,11 +543,11 @@ sudo sysctl --system
 
 
 # EFI System Partition
-/dev/disk/by-uuid/{YOUR UUID}              /boot/efi        vfat    defaults                                                     0       1
+/dev/disk/by-uuid/{YOUR UUID}              /boot/efi        vfat    defaults,umask=0077                                          0       1
 
 
 # Root Partition (SSD Optimized)
-UUID={YOUR UUID}                           /                ext4    defaults,noatime,data=writeback,journal_ioprio=0,nobarrier,commit=60,errors=remount-ro      0       1
+UUID={YOUR UUID}                           /                ext4    defaults,noatime,journal_ioprio=0,commit=60,errors=remount-ro      0       1
 
 
 # Swap File (Low priority to keep it as a last resort)
@@ -555,9 +555,9 @@ UUID={YOUR UUID}                           /                ext4    defaults,noa
 
 
 # Memory Resident File Systems (Fast & Stealthy)
-tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=10G,nosuid,nodev             0       0
+tmpfs                                      /tmp             tmpfs   defaults,noatime,mode=1777,size=4G,nosuid,nodev             0       0
 tmpfs                                      /var/log         tmpfs   defaults,noatime,mode=0755,size=256M,nosuid,nodev            0       0
-tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=4G,nosuid,nodev              0       0
+tmpfs                                      /var/tmp         tmpfs   defaults,noatime,mode=1777,size=2G,nosuid,nodev              0       0
 ```
 
 
@@ -629,7 +629,7 @@ GRUB_TERMINAL=console
 GRUB_COLOR_NORMAL="white/black"
 GRUB_COLOR_HIGHLIGHT="black/white"
 GRUB_CMDLINE_LINUX=""
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=efi fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=auto threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=10000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=efi fbcon=nodefer vsyscall=none pti=on slab_nomerge page_alloc.shuffle=1 mitigations=on threadirqs rcutree.use_softirq=0 rcutree.kthread_prio=1 skew_tick=1 tsx=off preempt=full intel_pstate=active nouveau.modeset=0 nvidia-drm.modeset=1 i915.fastboot=1 transparent_hugepage=madvise mem_sleep_default=deep zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc nvme_core.default_ps_max_latency_us=10000 nvme_core.io_timeout=255 nvme_core.admin_timeout=60 nosoftlockup nowatchdog nmi_watchdog=0 audit=0 printk.time=0 loglevel=0 systemd.show_status=0"
 
 
 
@@ -773,9 +773,6 @@ blacklist amd76x_edac
 # --- Видеопамять и управление питанием (Suspend/Resume Fixes) ---
 # Сохранять аллокации видеопамяти при переходе в сон (убирает артефакты и падения приложений)
 options nvidia NVreg_PreserveVideoMemoryAllocations=1
-
-# Путь для дампа VRAM. Перенесено в /var/tmp, так как /tmp (tmpfs) очищается при перезагрузке
-options nvidia NVreg_TemporaryFilePath=/var/tmp
 
 
 # --- Оптимизация шины и производительности CPU-GPU ---
