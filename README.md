@@ -271,6 +271,8 @@ sudo apt install safeeyes
 
 5. @id:ms-python.vscode-pylance
 
+6. @id:13xforever.language-x86-64-assembly
+
 
 # VS Code Settings
 
