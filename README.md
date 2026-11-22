@@ -291,7 +291,10 @@ sudo apt install safeeyes
             "titleBar.activeBackground"        : "#272522",
             "tab.activeBackground"             : "#2B2926",
             "tab.inactiveBackground"           : "#272522",
-            "editorGroupHeader.tabsBackground" : "#272522"
+            "editorGroupHeader.tabsBackground" : "#272522",
+            "statusBar.background"             : "#272522",
+            "statusBar.noFolderBackground"     : "#272522",
+            "statusBar.debuggingBackground"    : "#272522"
         }
     },
     "workbench.iconTheme"                          : "material-icon-theme",
