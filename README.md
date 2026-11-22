@@ -279,6 +279,19 @@ sudo apt install safeeyes
     "workbench.colorTheme"                         : "Kanagawa",
     "workbench.preferredDarkColorTheme"            : "Kanagawa",
     "workbench.preferredHighContrastColorTheme"    : "Kanagawa",
+    "workbench.colorCustomizations": {
+        "[Kanagawa]": {
+            "editor.background"                : "#2B2926",
+            "sideBar.background"               : "#272522",
+            "activityBar.background"           : "#272522",
+            "panel.background"                 : "#292724",
+            "terminal.background"              : "#292724",
+            "titleBar.activeBackground"        : "#272522",
+            "tab.activeBackground"             : "#2B2926",
+            "tab.inactiveBackground"           : "#272522",
+            "editorGroupHeader.tabsBackground" : "#272522"
+        }
+    },
     "workbench.iconTheme"                          : "material-icon-theme",
     "workbench.startupEditor"                      : "none",
     "workbench.editor.empty.hint"                  : "hidden",
@@ -300,7 +313,7 @@ sudo apt install safeeyes
     // === EDITOR: TYPOGRAPHY (Шрифты и текст) ===
     "editor.fontFamily"                            : "Fira Code SemiBold, monospace",
     "editor.fontWeight"                            : "bold",
-    "editor.fontSize"                              : 15,
+    "editor.fontSize"                              : 14,
     "editor.lineHeight"                            : 2,
     "editor.letterSpacing"                         : 1,
     "editor.fontLigatures"                         : false,
@@ -355,7 +368,7 @@ sudo apt install safeeyes
         "editor.semanticHighlighting.enabled"      : true,
         "editor.stickyScroll.defaultModel"         : "foldingProviderModel",
         "editor.suggest.insertMode"                : "replace"
-    },
+    }
 }
 ```
 
